@@ -259,6 +259,29 @@
         </div>
       </section>
 
+      <!-- パスワード設定（招待 / 再設定リンクから着地） -->
+      <section id="view-setpw" hidden>
+        <div class="signin-card">
+          <div class="signin-mark">¥</div>
+          <h1>パスワードを設定してください</h1>
+          <p class="sub" id="setpw-sub">招待（またはパスワード再設定）のリンクから開きました。アプリで使うパスワードを決めてください。</p>
+          <p class="sub num" id="setpw-email" hidden style="margin-top:-12px;"></p>
+          <div class="form-error" id="setpw-error" hidden></div>
+          <form id="setpw-form" autocomplete="on">
+            <div class="field">
+              <label for="setpw-password">新しいパスワード</label>
+              <input id="setpw-password" type="password" name="new-password" autocomplete="new-password" required minlength="6" />
+            </div>
+            <div class="field">
+              <label for="setpw-confirm">新しいパスワード（確認）</label>
+              <input id="setpw-confirm" type="password" name="new-password-confirm" autocomplete="new-password" required minlength="6" />
+            </div>
+            <button class="btn-primary" id="setpw-btn" type="submit">パスワードを設定する</button>
+          </form>
+          <p class="sub" style="margin:16px 0 0;">6文字以上で、ほかのサービスで使い回していないパスワードにしてください。</p>
+        </div>
+      </section>
+
       <!-- 家計簿 -->
       <section id="view-app" hidden>
         <div class="topbar">
@@ -483,6 +506,138 @@
         showSignin();
       }
 
+      /* ---------- 認証コールバック（招待 / パスワード再設定） ---------- */
+      // Supabase の招待・再設定メールは
+      //   #access_token=...&refresh_token=...&expires_in=3600&token_type=bearer&type=invite
+      //   （または type=recovery）
+      // というハッシュ付きでこのページに着地する。そのセッションを受け取り、
+      // パスワード設定フォームへ進める。
+      function parseHashParams() {
+        var hash = window.location.hash || "";
+        if (hash.charAt(0) === "#") hash = hash.slice(1);
+        if (!hash) return null;
+        try {
+          var params = new URLSearchParams(hash);
+          var out = {};
+          var has = false;
+          params.forEach(function (v, k) { out[k] = v; has = true; });
+          return has ? out : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function clearUrlHash() {
+        try {
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, document.title,
+              window.location.pathname + window.location.search);
+          } else {
+            window.location.hash = "";
+          }
+        } catch (e) { /* ハッシュ除去はベストエフォート */ }
+      }
+
+      function fetchCurrentUser(token) {
+        return fetch(SUPABASE_URL + "/auth/v1/user", {
+          method: "GET",
+          headers: { "apikey": ANON_KEY, "Authorization": "Bearer " + token }
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (json) {
+            if (!res.ok) {
+              var msg = json.error_description || json.msg || json.message || ("HTTP " + res.status);
+              throw new Error(msg);
+            }
+            return json;
+          });
+        });
+      }
+
+      function updatePassword(newPassword) {
+        var token = getAccess();
+        if (!token) return Promise.reject(new Error("セッションがありません。リンクをもう一度開いてください。"));
+        return fetch(SUPABASE_URL + "/auth/v1/user", {
+          method: "PUT",
+          headers: {
+            "apikey": ANON_KEY,
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ password: newPassword })
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (json) {
+            if (!res.ok) {
+              var msg = json.error_description || json.msg || json.message || ("HTTP " + res.status);
+              throw new Error(msg);
+            }
+            if (json && json.email) localStorage.setItem(LS_EMAIL, json.email);
+            return json;
+          });
+        });
+      }
+
+      // ハッシュにコールバック情報があれば処理する。
+      // 戻り値: "setpw" = パスワード設定画面を出す / "error" = エラーを表示済み / null = コールバックなし
+      var authCallbackType = "";
+      function handleAuthCallback() {
+        var p = parseHashParams();
+        if (!p) return null;
+        // エラー付きで戻ってきた場合（リンク期限切れ等）
+        if (p.error || p.error_description) {
+          clearUrlHash();
+          var desc = p.error_description || p.error || "";
+          try { desc = decodeURIComponent(String(desc).replace(/\+/g, " ")); } catch (e) {}
+          showSignin("リンクを開けませんでした：" + desc + "　新しい招待／再設定メールから開き直してください。");
+          return "error";
+        }
+        var type = p.type || "";
+        var isPasswordFlow = (type === "invite" || type === "recovery");
+        if (!p.access_token) return null;
+        if (!isPasswordFlow) {
+          // signup / magiclink 等、パスワード設定が不要なコールバックは
+          // セッションだけ受け取って通常画面へ進む
+          var exp2 = parseInt(p.expires_in || "3600", 10);
+          if (isNaN(exp2) || exp2 <= 0) exp2 = 3600;
+          saveSession({
+            access_token: p.access_token,
+            refresh_token: p.refresh_token || "",
+            expires_in: exp2,
+            user: null
+          });
+          clearUrlHash();
+          fetchCurrentUser(p.access_token).then(function (user) {
+            if (user && user.email) localStorage.setItem(LS_EMAIL, user.email);
+            showApp();
+            loadData();
+          }).catch(function () {
+            showApp();
+            loadData();
+          });
+          return "session";
+        }
+        authCallbackType = type;
+        var expiresIn = parseInt(p.expires_in || "3600", 10);
+        if (isNaN(expiresIn) || expiresIn <= 0) expiresIn = 3600;
+        saveSession({
+          access_token: p.access_token,
+          refresh_token: p.refresh_token || "",
+          expires_in: expiresIn,
+          user: null
+        });
+        // トークンをアドレスバーに残さない
+        clearUrlHash();
+        showSetPassword();
+        // メールアドレス表示用にユーザー情報を取得（失敗してもフォームは使える）
+        fetchCurrentUser(p.access_token).then(function (user) {
+          if (user && user.email) {
+            localStorage.setItem(LS_EMAIL, user.email);
+            var el = $("setpw-email");
+            if (el) { el.textContent = user.email; el.hidden = false; }
+          }
+        }).catch(function () { /* 表示だけの取得なので無視 */ });
+        return "setpw";
+      }
+
       /* ================= REST ================= */
       function restFetch(path, options, retried) {
         options = options || {};
@@ -523,12 +678,33 @@
       /* ================= 画面切替 ================= */
       function showSignin(msg) {
         $("view-app").hidden = true;
+        $("view-setpw").hidden = true;
         $("view-signin").hidden = false;
         var err = $("signin-error");
         if (msg) { err.textContent = msg; err.hidden = false; } else { err.hidden = true; }
       }
+      function showSetPassword() {
+        $("view-signin").hidden = true;
+        $("view-app").hidden = true;
+        $("view-setpw").hidden = false;
+        var sub = $("setpw-sub");
+        if (sub) {
+          sub.textContent = authCallbackType === "recovery"
+            ? "パスワード再設定のリンクから開きました。新しいパスワードを決めてください。"
+            : "招待のリンクから開きました。アプリで使うパスワードを決めてください。";
+        }
+        var email = localStorage.getItem(LS_EMAIL) || "";
+        var emailEl = $("setpw-email");
+        if (emailEl) {
+          if (email) { emailEl.textContent = email; emailEl.hidden = false; }
+          else { emailEl.hidden = true; }
+        }
+        var pw = $("setpw-password");
+        if (pw) { setTimeout(function () { try { pw.focus(); } catch (e) {} }, 50); }
+      }
       function showApp() {
         $("view-signin").hidden = true;
+        $("view-setpw").hidden = true;
         $("view-app").hidden = false;
         $("user-email").textContent = localStorage.getItem(LS_EMAIL) || "";
       }
@@ -927,6 +1103,62 @@
           });
         });
 
+        $("setpw-form").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var errEl = $("setpw-error");
+          errEl.hidden = true;
+          var pw = $("setpw-password").value || "";
+          var pw2 = $("setpw-confirm").value || "";
+          if (pw.length < 6) {
+            errEl.textContent = "パスワードは6文字以上で入力してください。";
+            errEl.hidden = false;
+            return;
+          }
+          if (pw !== pw2) {
+            errEl.textContent = "確認用のパスワードが一致しません。もう一度入力してください。";
+            errEl.hidden = false;
+            return;
+          }
+          var btn = $("setpw-btn");
+          btn.disabled = true;
+          btn.textContent = "設定中…";
+          updatePassword(pw).then(function () {
+            btn.disabled = false;
+            btn.textContent = "パスワードを設定する";
+            $("setpw-form").reset();
+            showApp();
+            showAppOk("パスワードを設定しました。");
+            loadData();
+          }).catch(function (err) {
+            // トークンが切れていたらリフレッシュして1回だけ再試行
+            var msg = err && err.message ? err.message : "";
+            if (/jwt|token|unauthor|expired|401/i.test(msg) && getRefresh()) {
+              return refreshSession().then(function () {
+                return updatePassword(pw);
+              }).then(function () {
+                btn.disabled = false;
+                btn.textContent = "パスワードを設定する";
+                $("setpw-form").reset();
+                showApp();
+                showAppOk("パスワードを設定しました。");
+                loadData();
+              }).catch(function (err2) {
+                btn.disabled = false;
+                btn.textContent = "パスワードを設定する";
+                errEl.textContent = "パスワードを設定できませんでした：" + (err2 && err2.message ? err2.message : err2) + "　リンクの有効期限が切れている場合は、新しいメールから開き直してください。";
+                errEl.hidden = false;
+              });
+            }
+            btn.disabled = false;
+            btn.textContent = "パスワードを設定する";
+            if (/password/i.test(msg) && /weak|short|least|characters/i.test(msg)) {
+              msg = "パスワードが弱すぎるか短すぎます。6文字以上の別のパスワードにしてください。";
+            }
+            errEl.textContent = "パスワードを設定できませんでした：" + msg;
+            errEl.hidden = false;
+          });
+        });
+
         $("signout-btn").addEventListener("click", signOut);
 
         $("prev-month").addEventListener("click", function () {
@@ -954,6 +1186,14 @@
         $("delete-modal").addEventListener("click", function (ev) {
           if (ev.target === $("delete-modal")) closeDelete();
         });
+
+        // 認証コールバック（招待 / パスワード再設定リンク）を最優先で処理
+        var callbackResult = handleAuthCallback();
+        if (callbackResult) {
+          // "setpw" のときはパスワード設定画面を表示済み。
+          // "error" のときはサインイン画面にエラーを表示済み。
+          return;
+        }
 
         // 既存セッションの復元
         if (getAccess() && getExpires() > Date.now() + 30 * 1000) {
