@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
-<meta name="theme-color" content="#171a1f" />
+<meta name="theme-color" content="#26221b" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -15,45 +15,52 @@
 <style>
   :root{
     color-scheme: light dark;
-    --bg:#f4f4f1;
-    --surface:#ffffff;
-    --surface-2:#eceee9;
-    --ink:#171a1f;
-    --ink-2:#4c5257;
-    --ink-3:#8a9096;
-    --line:#dddeda;
-    --accent:#d9480f;
+    --bg:#f6f1e7;
+    --surface:#fffdf6;
+    --surface-2:#ece5d5;
+    --ink:#26221b;
+    --ink-2:#5c564a;
+    --ink-3:#948c7b;
+    --line:#d9d0bd;
+    --line-strong:#b9ae94;
+    --accent:#c73e1d;
     --accent-ink:#ffffff;
-    --accent-soft:#fdeee7;
+    --accent-soft:#f7e3da;
     --ok:#1e7d46;
     --ok-soft:#e6f4ec;
-    --danger:#c92a2a;
-    --danger-soft:#fdecec;
-    --danger-line:#f3b8b8;
+    --danger:#b3271e;
+    --danger-soft:#fae9e4;
+    --danger-line:#e0a49c;
+    --today:#cf6200;
+    --chip-gray:#7d7663;
     --warn:#9a6206;
     --warn-soft:#fdf3e0;
-    --focus:#d9480f;
-    --shadow:0 1px 2px rgba(23,26,31,.05),0 8px 24px rgba(23,26,31,.06);
+    --focus:#c73e1d;
+    --shadow:none;
+    --serif:"Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho","Noto Serif JP",serif;
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --bg:#101214;
-      --surface:#1a1d20;
-      --surface-2:#23272b;
-      --ink:#f2f2ee;
-      --ink-2:#b9bec3;
-      --ink-3:#7e858c;
-      --line:#2e3236;
-      --accent:#f06a2e;
-      --accent-soft:#3a241a;
+      --bg:#1d1a15;
+      --surface:#26221b;
+      --surface-2:#332e24;
+      --ink:#f0ead9;
+      --ink-2:#c4bba4;
+      --ink-3:#8f8672;
+      --line:#3d372b;
+      --line-strong:#5a5240;
+      --accent:#e2572e;
+      --accent-soft:#3d241a;
       --ok:#4cc38a;
       --ok-soft:#1d2f26;
-      --danger:#ff8787;
-      --danger-soft:#3a1f1f;
-      --danger-line:#5c3030;
+      --danger:#ff8a7a;
+      --danger-soft:#3a2320;
+      --danger-line:#5c3530;
+      --today:#f59e4c;
+      --chip-gray:#6e675a;
       --warn:#f5c86b;
       --warn-soft:#33291a;
-      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+      --shadow:none;
     }
   }
   *{box-sizing:border-box}
@@ -75,21 +82,21 @@
 
   /* ---------- login ---------- */
   .login-wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
-  .login-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:32px 26px 28px}
-  .mark{width:52px;height:52px;border-radius:14px;background:var(--ink);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+  .login-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line-strong);border-radius:4px;padding:32px 26px 28px}
+  .mark{width:52px;height:52px;border-radius:4px;background:var(--ink);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
   .mark svg{width:30px;height:30px}
-  .login-card h1{font-size:26px;margin:0 0 4px;letter-spacing:.02em}
+  .login-card h1{font-family:var(--serif);font-size:28px;font-weight:800;margin:0 0 4px;letter-spacing:.04em}
   .login-card .sub{color:var(--ink-2);font-size:14px;margin:0 0 24px}
   .field{margin-bottom:14px}
   .field label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
   .field input,.field textarea{
-    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;
     padding:12px 14px;font-size:16px;appearance:none;
   }
-  .field input:focus,.field textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+  .field input:focus,.field textarea:focus{border-color:var(--accent);outline:none}
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    border:1px solid transparent;border-radius:10px;padding:12px 18px;
+    border:1px solid transparent;border-radius:4px;padding:12px 18px;
     font-weight:700;font-size:15px;background:var(--ink);color:var(--bg);
     transition:opacity .15s ease;
   }
@@ -97,25 +104,25 @@
   .btn[disabled]{opacity:.5;cursor:default}
   .btn-accent{background:var(--accent);color:var(--accent-ink);width:100%}
   .btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--line)}
-  .btn-small{padding:8px 12px;font-size:13px;border-radius:8px}
-  .form-error{display:none;background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger-line);border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:14px}
+  .btn-small{padding:8px 12px;font-size:13px;border-radius:4px}
+  .form-error{display:none;background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger-line);border-radius:4px;padding:10px 12px;font-size:14px;margin-bottom:14px}
   .form-error.show{display:block}
 
   /* ---------- app header ---------- */
-  .app-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 2px 18px}
-  .app-head h1{font-size:30px;margin:0;line-height:1.1;letter-spacing:.02em}
-  .today-line{color:var(--ink-2);font-size:13px;margin-top:4px}
+  .app-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 2px 20px;padding-bottom:14px;border-bottom:3px double var(--line-strong)}
+  .app-head h1{font-family:var(--serif);font-size:34px;font-weight:800;margin:0;line-height:1.1;letter-spacing:.06em}
+  .today-line{color:var(--ink-2);font-size:13px;margin-top:5px}
   .head-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-  .count-chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--ink-2);white-space:nowrap}
+  .count-chip{background:transparent;border:1px solid var(--line-strong);border-radius:3px;padding:5px 10px;font-size:13px;font-weight:700;color:var(--ink-2);white-space:nowrap}
   .icon-btn{
-    width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+    width:40px;height:40px;border-radius:4px;border:1px solid var(--line);background:transparent;
     display:inline-flex;align-items:center;justify-content:center;color:var(--ink-2);flex-shrink:0;
   }
   .icon-btn svg{width:19px;height:19px}
 
   /* ---------- add form ---------- */
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
-  .add-card{padding:16px;margin-bottom:18px}
+  .card{background:var(--surface);border:1px solid var(--line-strong);border-radius:4px}
+  .add-card{padding:16px;margin-bottom:22px}
   .add-title-row{display:flex;gap:10px}
   .add-title-row input{
     flex:1;min-width:0;border:none;background:transparent;font-size:17px;font-weight:600;padding:6px 2px;
@@ -123,64 +130,84 @@
   .add-title-row input:focus{outline:none}
   .add-title-row input::placeholder{color:var(--ink-3);font-weight:500}
   .add-submit{
-    background:var(--accent);color:var(--accent-ink);border:none;border-radius:10px;
+    background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;
     padding:10px 18px;font-weight:700;font-size:15px;flex-shrink:0;
   }
   .add-submit[disabled]{opacity:.45}
   .add-meta{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
   .add-meta .due-field{
     display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
-    border-radius:9px;padding:7px 10px;font-size:14px;color:var(--ink-2);
+    border-radius:4px;padding:7px 10px;font-size:14px;color:var(--ink-2);
   }
   .add-meta input[type="date"]{border:none;background:transparent;font-size:14px;padding:0;color:var(--ink)}
   .add-meta input[type="date"]:focus{outline:none}
-  .note-toggle{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:14px;color:var(--ink-2)}
+  .note-toggle{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:7px 12px;font-size:14px;color:var(--ink-2)}
   .note-area{margin-top:12px;display:none}
   .note-area.open{display:block}
   .note-area textarea{
-    width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;
+    width:100%;border:1px solid var(--line);background:var(--bg);border-radius:4px;
     padding:10px 12px;font-size:15px;resize:vertical;min-height:64px;
   }
 
-  /* ---------- filter ---------- */
-  .filter{display:flex;background:var(--surface-2);border-radius:11px;padding:3px;margin-bottom:14px}
+  /* ---------- toolbar: filter + view toggle ---------- */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin-bottom:6px}
+  .filter{display:flex;flex:1 1 260px;background:transparent;border:1px solid var(--line-strong);border-radius:4px;padding:3px}
   .filter button{
-    flex:1;border:none;background:transparent;border-radius:8px;padding:8px 4px;
+    flex:1;border:none;background:transparent;border-radius:2px;padding:8px 4px;
     font-size:14px;font-weight:600;color:var(--ink-2);
   }
-  .filter button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .filter button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  .filter button[aria-pressed="true"] .n{color:var(--bg);opacity:.75}
   .filter .n{font-size:12px;color:var(--ink-3);margin-left:4px;font-weight:600}
+  .view-toggle{display:flex;border:1px solid var(--line-strong);border-radius:4px;padding:3px;background:transparent}
+  .view-toggle button{
+    border:none;background:transparent;border-radius:2px;padding:8px 14px;
+    font-size:14px;font-weight:600;color:var(--ink-2);white-space:nowrap;
+  }
+  .view-toggle button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 
   /* ---------- list ---------- */
-  .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .group{margin-top:28px}
+  .group:first-child{margin-top:10px}
+  .group-head{display:flex;align-items:baseline;gap:9px;border-bottom:2px solid var(--ink);padding-bottom:6px}
+  .group-head h2{font-family:var(--serif);font-size:20px;font-weight:800;margin:0;letter-spacing:.03em}
+  .group-head .g-count{font-size:13px;font-weight:700;color:var(--ink-3)}
+  .group.overdue .group-head{border-bottom-color:var(--danger)}
+  .group.overdue .group-head h2{color:var(--danger)}
+  .group.done-group .group-head{border-bottom-color:var(--line-strong)}
+  .group.done-group .group-head h2{color:var(--ink-2)}
+  .flat-list{margin-top:10px}
+  .list{list-style:none;margin:0;padding:0}
   .task{
-    display:flex;gap:12px;align-items:flex-start;background:var(--surface);
-    border:1px solid var(--line);border-radius:14px;padding:14px 14px 14px 12px;
+    display:flex;gap:12px;align-items:flex-start;background:transparent;
+    border-bottom:1px solid var(--line);padding:14px 2px;
   }
-  .task.overdue{border-color:var(--danger-line);background:var(--danger-soft)}
-  .task.done-task{opacity:.62}
   .check{
-    width:27px;height:27px;border-radius:50%;border:2px solid var(--ink-3);background:transparent;
+    width:26px;height:26px;border-radius:3px;border:2px solid var(--ink-2);background:transparent;
     flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;padding:0;
     transition:background .12s ease,border-color .12s ease;
   }
   .check svg{width:15px;height:15px;opacity:0;transform:scale(.6);transition:opacity .12s ease,transform .12s ease}
-  .check[aria-checked="true"]{background:var(--ok);border-color:var(--ok)}
+  .check[aria-checked="true"]{background:var(--accent);border-color:var(--accent)}
   .check[aria-checked="true"] svg{opacity:1;transform:scale(1)}
   .task.overdue .check{border-color:var(--danger)}
   .task-body{flex:1;min-width:0}
   .task-title{font-size:16px;font-weight:600;word-break:break-word}
-  .task.done-task .task-title{text-decoration:line-through;color:var(--ink-2)}
+  .task.done-task .task-title{text-decoration:line-through;color:var(--ink-3)}
   .task-note{font-size:14px;color:var(--ink-2);margin-top:3px;white-space:pre-wrap;word-break:break-word}
+  .task.done-task .task-note{color:var(--ink-3)}
   .task-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
-  .badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--ink-2)}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:3px;padding:3px 8px;background:var(--chip-gray);color:#fff}
   .badge svg{width:12px;height:12px}
-  .badge.today{background:var(--warn-soft);color:var(--warn)}
+  .badge.today{background:var(--today);color:#fff}
   .badge.overdue{background:var(--danger);color:#fff}
-  .badge.doneb{background:var(--ok-soft);color:var(--ok)}
+  .badge.doneb{background:var(--surface-2);color:var(--ink-2)}
+  @media (prefers-color-scheme: dark){
+    .badge.today{color:#26221b}
+  }
   .task-actions{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
   .mini-btn{
-    width:34px;height:34px;border:none;background:transparent;border-radius:8px;color:var(--ink-3);
+    width:34px;height:34px;border:none;background:transparent;border-radius:4px;color:var(--ink-3);
     display:flex;align-items:center;justify-content:center;padding:0;
   }
   .mini-btn svg{width:17px;height:17px}
@@ -189,25 +216,25 @@
   /* edit form inside task */
   .edit-form{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
   .edit-form input[type="text"],.edit-form textarea{
-    width:100%;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:10px 12px;font-size:15px;
+    width:100%;border:1px solid var(--line);background:var(--bg);border-radius:4px;padding:10px 12px;font-size:15px;
   }
   .edit-form textarea{resize:vertical;min-height:56px}
   .edit-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .edit-row input[type="date"]{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 10px;font-size:14px}
+  .edit-row input[type="date"]{border:1px solid var(--line);background:var(--bg);border-radius:4px;padding:8px 10px;font-size:14px}
   .edit-btns{display:flex;gap:8px;margin-left:auto}
-  .btn-save{background:var(--accent);color:var(--accent-ink);border:none;border-radius:9px;padding:9px 16px;font-weight:700;font-size:14px}
-  .btn-cancel{background:transparent;border:1px solid var(--line);border-radius:9px;padding:9px 14px;font-size:14px;color:var(--ink-2)}
+  .btn-save{background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;padding:9px 16px;font-weight:700;font-size:14px}
+  .btn-cancel{background:transparent;border:1px solid var(--line);border-radius:4px;padding:9px 14px;font-size:14px;color:var(--ink-2)}
 
   .empty{
     text-align:center;color:var(--ink-3);padding:44px 16px;font-size:15px;
-    border:1.5px dashed var(--line);border-radius:14px;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:14px;
   }
   .empty strong{display:block;color:var(--ink-2);font-size:16px;margin-bottom:4px}
   .loading{text-align:center;color:var(--ink-3);padding:36px 0;font-size:14px}
 
   /* ---------- obsidian ---------- */
-  .obsidian{margin-top:26px;padding:18px}
-  .obsidian h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .obsidian{margin-top:40px;padding:20px 2px 0;background:transparent;border:none;border-top:3px double var(--line-strong);border-radius:0}
+  .obsidian h2{font-family:var(--serif);font-size:18px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:8px}
   .obsidian h2 svg{width:18px;height:18px}
   .obsidian p{font-size:13px;color:var(--ink-2);margin:0 0 14px}
   .obsidian-btns{display:flex;gap:8px;flex-wrap:wrap}
@@ -216,9 +243,9 @@
   /* ---------- toast ---------- */
   .toast{
     position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,16px);
-    background:var(--ink);color:var(--bg);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;
+    background:var(--ink);color:var(--bg);border-radius:4px;padding:11px 18px;font-size:14px;font-weight:600;
     opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:50;
-    max-width:calc(100vw - 32px);text-align:center;box-shadow:var(--shadow);
+    max-width:calc(100vw - 32px);text-align:center;
   }
   .toast.show{opacity:1;transform:translate(-50%,0)}
   .toast.err{background:var(--danger);color:#fff}
@@ -292,14 +319,20 @@
     </div>
   </form>
 
-  <div class="filter" role="group" aria-label="表示フィルタ">
-    <button type="button" data-filter="open" aria-pressed="true">未完了<span class="n" id="nOpen"></span></button>
-    <button type="button" data-filter="done" aria-pressed="false">完了<span class="n" id="nDone"></span></button>
-    <button type="button" data-filter="all" aria-pressed="false">全部<span class="n" id="nAll"></span></button>
+  <div class="toolbar">
+    <div class="filter" role="group" aria-label="表示フィルタ">
+      <button type="button" data-filter="open" aria-pressed="true">未完了<span class="n" id="nOpen"></span></button>
+      <button type="button" data-filter="done" aria-pressed="false">完了<span class="n" id="nDone"></span></button>
+      <button type="button" data-filter="all" aria-pressed="false">全部<span class="n" id="nAll"></span></button>
+    </div>
+    <div class="view-toggle" role="group" aria-label="並び順">
+      <button type="button" data-view="due" aria-pressed="true">期限順</button>
+      <button type="button" data-view="added" aria-pressed="false">追加順</button>
+    </div>
   </div>
 
   <div class="loading" id="listLoading">読み込み中…</div>
-  <ul class="list" id="taskList"></ul>
+  <div id="taskList"></div>
   <div class="empty" id="emptyState" hidden></div>
 
   <section class="card obsidian" aria-labelledby="obsidianTitle">
@@ -333,8 +366,8 @@
       display: "standalone",
       start_url: ".",
       scope: ".",
-      background_color: "#f4f4f1",
-      theme_color: "#171a1f",
+      background_color: "#f6f1e7",
+      theme_color: "#26221b",
       icons: [
         { src: iconSvg, sizes: "any", type: "image/svg+xml", purpose: "any" },
         { src: iconSvg, sizes: "192x192", type: "image/svg+xml", purpose: "any" },
@@ -357,6 +390,7 @@
   var session = null;        // {access_token, refresh_token, expires_at, user}
   var tasks = [];
   var filter = "open";       // open | done | all
+  var viewMode = "due";      // due（期限順グループ） | added（追加順フラット）
   var editingId = null;
   var refreshTimer = null;
 
@@ -399,6 +433,13 @@
   function fmtTodayLine(){
     var d = new Date();
     return d.getFullYear() + "年" + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEK[d.getDay()] + "）";
+  }
+  function dateAddStr(baseStr, days){
+    var p = baseStr.split("-");
+    var d = new Date(Number(p[0]), Number(p[1])-1, Number(p[2]) + days);
+    var m = String(d.getMonth()+1).padStart(2,"0");
+    var day = String(d.getDate()).padStart(2,"0");
+    return d.getFullYear() + "-" + m + "-" + day;
   }
 
   /* ===== セッション保存 ===== */
@@ -581,25 +622,86 @@
   }
 
   /* ===== 描画 ===== */
-  function visibleTasks(){
-    var sorted = sortTasks(tasks);
-    if (filter === "open") return sorted.filter(function(t){ return !t.done; });
-    if (filter === "done") return sorted.filter(function(t){ return t.done; });
-    return sorted;
+  var DUE_GROUPS = [
+    { key: "overdue",  label: "期限切れ", cls: "overdue" },
+    { key: "today",    label: "今日",     cls: "" },
+    { key: "tomorrow", label: "明日",     cls: "" },
+    { key: "week",     label: "今週",     cls: "" },
+    { key: "later",    label: "それ以降", cls: "" },
+    { key: "nodue",    label: "期限なし", cls: "" }
+  ];
+
+  function dueGroupKey(t){
+    if (!t.due) return "nodue";
+    var today = todayStr();
+    if (t.due < today) return "overdue";
+    if (t.due === today) return "today";
+    if (t.due === dateAddStr(today, 1)) return "tomorrow";
+    if (t.due <= dateAddStr(today, 7)) return "week";
+    return "later";
+  }
+
+  /* グループ内: 期限の早い順、同日は作成順 */
+  function byDueThenCreated(a, b){
+    var ad = a.due || "9999-12-31", bd = b.due || "9999-12-31";
+    if (ad !== bd) return ad < bd ? -1 : 1;
+    var ac = a.created_at || "", bc = b.created_at || "";
+    if (ac !== bc) return ac < bc ? -1 : 1;
+    return (a.id || 0) - (b.id || 0);
+  }
+  /* 追加順: 新しい順 */
+  function byNewest(a, b){
+    var ac = a.created_at || "", bc = b.created_at || "";
+    if (ac !== bc) return ac < bc ? 1 : -1;
+    return (b.id || 0) - (a.id || 0);
+  }
+  /* 完了済み: 完了したのが新しい順 */
+  function byDoneRecent(a, b){
+    var ad = a.done_at || a.created_at || "", bd = b.done_at || b.created_at || "";
+    if (ad !== bd) return ad < bd ? 1 : -1;
+    return (b.id || 0) - (a.id || 0);
+  }
+
+  function sectionHtml(label, items, extraCls){
+    return '<section class="group' + (extraCls ? " " + extraCls : "") + '">' +
+      '<div class="group-head"><h2>' + esc(label) + '</h2><span class="g-count">' + items.length + '件</span></div>' +
+      '<ul class="list">' + items.map(renderTask).join("") + '</ul>' +
+    '</section>';
   }
 
   function render(){
-    var openCount = tasks.filter(function(t){ return !t.done; }).length;
-    var doneCount = tasks.length - openCount;
-    $("nOpen").textContent = openCount;
-    $("nDone").textContent = doneCount;
+    var openTasks = tasks.filter(function(t){ return !t.done; });
+    var doneTasks = tasks.filter(function(t){ return t.done; });
+    $("nOpen").textContent = openTasks.length;
+    $("nDone").textContent = doneTasks.length;
     $("nAll").textContent = tasks.length;
-    $("countChip").textContent = "残り " + openCount + " 件";
+    $("countChip").textContent = "残り " + openTasks.length + " 件";
 
-    var list = visibleTasks();
-    taskList.innerHTML = list.map(renderTask).join("");
+    var showOpen = filter !== "done";
+    var showDone = filter !== "open";
+    var html = "";
+    var visibleCount = 0;
 
-    if (list.length === 0) {
+    if (showOpen && openTasks.length) {
+      visibleCount += openTasks.length;
+      if (viewMode === "due") {
+        DUE_GROUPS.forEach(function(g){
+          var items = openTasks.filter(function(t){ return dueGroupKey(t) === g.key; }).sort(byDueThenCreated);
+          if (items.length) html += sectionHtml(g.label, items, g.cls);
+        });
+      } else {
+        var sorted = openTasks.slice().sort(byNewest);
+        html += '<div class="flat-list"><ul class="list">' + sorted.map(renderTask).join("") + '</ul></div>';
+      }
+    }
+    if (showDone && doneTasks.length) {
+      visibleCount += doneTasks.length;
+      html += sectionHtml("完了済み", doneTasks.slice().sort(byDoneRecent), "done-group");
+    }
+
+    taskList.innerHTML = html;
+
+    if (visibleCount === 0) {
       emptyState.hidden = false;
       if (filter === "open") emptyState.innerHTML = "<strong>未完了のタスクはありません</strong>全部片付いています。";
       else if (filter === "done") emptyState.innerHTML = "<strong>完了したタスクはまだありません</strong>チェックを入れるとここに並びます。";
@@ -755,6 +857,17 @@
     b.addEventListener("click", function(){
       filter = b.dataset.filter;
       document.querySelectorAll(".filter button").forEach(function(x){
+        x.setAttribute("aria-pressed", x === b ? "true" : "false");
+      });
+      render();
+    });
+  });
+
+  /* 並び順（期限順グループ / 追加順フラット） */
+  document.querySelectorAll(".view-toggle button").forEach(function(b){
+    b.addEventListener("click", function(){
+      viewMode = b.dataset.view;
+      document.querySelectorAll(".view-toggle button").forEach(function(x){
         x.setAttribute("aria-pressed", x === b ? "true" : "false");
       });
       render();
