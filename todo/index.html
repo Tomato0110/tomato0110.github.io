@@ -232,14 +232,6 @@
   .empty strong{display:block;color:var(--ink-2);font-size:16px;margin-bottom:4px}
   .loading{text-align:center;color:var(--ink-3);padding:36px 0;font-size:14px}
 
-  /* ---------- obsidian ---------- */
-  .obsidian{margin-top:40px;padding:20px 2px 0;background:transparent;border:none;border-top:3px double var(--line-strong);border-radius:0}
-  .obsidian h2{font-family:var(--serif);font-size:18px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:8px}
-  .obsidian h2 svg{width:18px;height:18px}
-  .obsidian p{font-size:13px;color:var(--ink-2);margin:0 0 14px}
-  .obsidian-btns{display:flex;gap:8px;flex-wrap:wrap}
-  .obsidian-btns .btn{flex:1;min-width:140px}
-
   /* ---------- toast ---------- */
   .toast{
     position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,16px);
@@ -335,18 +327,6 @@
   <div id="taskList"></div>
   <div class="empty" id="emptyState" hidden></div>
 
-  <section class="card obsidian" aria-labelledby="obsidianTitle">
-    <h2 id="obsidianTitle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      Obsidianと連携
-    </h2>
-    <p>未完了タスクをMarkdownのチェックリストとして書き出せます。コピーしてノートに貼るか、そのままObsidianで新規ノートとして開けます。</p>
-    <div class="obsidian-btns">
-      <button class="btn btn-ghost btn-small" id="copyMdBtn" type="button">Markdownをコピー</button>
-      <button class="btn btn-ghost btn-small" id="openObsidianBtn" type="button">Obsidianで開く</button>
-      <button class="btn btn-ghost btn-small" id="downloadMdBtn" type="button">.mdをダウンロード</button>
-    </div>
-  </section>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -917,75 +897,6 @@
     }).catch(function(){
       toast("追加に失敗しました", true);
     }).then(function(){ btn.disabled = false; });
-  });
-
-  /* ===== Obsidian連携 ===== */
-  function buildMarkdown(){
-    var open = sortTasks(tasks).filter(function(t){ return !t.done; });
-    var done = sortTasks(tasks).filter(function(t){ return t.done; });
-    var lines = ["# TODO", ""];
-    if (open.length === 0 && done.length === 0) lines.push("（タスクはありません）");
-    open.forEach(function(t){
-      var line = "- [ ] " + t.title;
-      if (t.due) line += " 📅 " + t.due;
-      lines.push(line);
-      if (t.note) lines.push("  - " + String(t.note).split("\n").join("\n  - "));
-    });
-    if (done.length) {
-      if (open.length) lines.push("");
-      lines.push("## 完了", "");
-      done.forEach(function(t){
-        var line = "- [x] " + t.title;
-        if (t.due) line += " 📅 " + t.due;
-        lines.push(line);
-      });
-    }
-    return lines.join("\n");
-  }
-
-  function copyText(text){
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      return navigator.clipboard.writeText(text);
-    }
-    return new Promise(function(resolve, reject){
-      var ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed"; ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy") ? resolve() : reject(new Error("copy")); }
-      catch (e) { reject(e); }
-      document.body.removeChild(ta);
-    });
-  }
-
-  $("copyMdBtn").addEventListener("click", function(){
-    copyText(buildMarkdown()).then(function(){
-      toast("Markdownをコピーしました");
-    }).catch(function(){ toast("コピーに失敗しました", true); });
-  });
-
-  $("openObsidianBtn").addEventListener("click", function(){
-    var name = "TODO " + todayStr();
-    var url = "obsidian://new?name=" + encodeURIComponent(name) + "&content=" + encodeURIComponent(buildMarkdown());
-    var a = document.createElement("a");
-    a.href = url;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    toast("Obsidianを開いています");
-  });
-
-  $("downloadMdBtn").addEventListener("click", function(){
-    var blob = new Blob([buildMarkdown()], { type: "text/markdown;charset=utf-8" });
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "TODO-" + todayStr() + ".md";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
-    toast("ダウンロードしました");
   });
 
   /* ===== ログイン / ログアウト ===== */
