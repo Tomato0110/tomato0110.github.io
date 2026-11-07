@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#171a1f" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="TODO" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23171a1f'/%3E%3Cpath d='M18 33.5 27.5 43 46 22' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23171a1f'/%3E%3Cpath d='M18 33.5 27.5 43 46 22' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<title>TODO</title>
+<style>
+  :root{
+    color-scheme: light dark;
+    --bg:#f4f4f1;
+    --surface:#ffffff;
+    --surface-2:#eceee9;
+    --ink:#171a1f;
+    --ink-2:#4c5257;
+    --ink-3:#8a9096;
+    --line:#dddeda;
+    --accent:#d9480f;
+    --accent-ink:#ffffff;
+    --accent-soft:#fdeee7;
+    --ok:#1e7d46;
+    --ok-soft:#e6f4ec;
+    --danger:#c92a2a;
+    --danger-soft:#fdecec;
+    --danger-line:#f3b8b8;
+    --warn:#9a6206;
+    --warn-soft:#fdf3e0;
+    --focus:#d9480f;
+    --shadow:0 1px 2px rgba(23,26,31,.05),0 8px 24px rgba(23,26,31,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101214;
+      --surface:#1a1d20;
+      --surface-2:#23272b;
+      --ink:#f2f2ee;
+      --ink-2:#b9bec3;
+      --ink-3:#7e858c;
+      --line:#2e3236;
+      --accent:#f06a2e;
+      --accent-soft:#3a241a;
+      --ok:#4cc38a;
+      --ok-soft:#1d2f26;
+      --danger:#ff8787;
+      --danger-soft:#3a1f1f;
+      --danger-line:#5c3030;
+      --warn:#f5c86b;
+      --warn-soft:#33291a;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:16px;line-height:1.55;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  button{font:inherit;cursor:pointer}
+  input,textarea,select{font:inherit;color:var(--ink)}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .wrap{max-width:640px;margin:0 auto;padding:20px 16px 56px}
+
+  /* ---------- login ---------- */
+  .login-wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+  .login-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:32px 26px 28px}
+  .mark{width:52px;height:52px;border-radius:14px;background:var(--ink);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+  .mark svg{width:30px;height:30px}
+  .login-card h1{font-size:26px;margin:0 0 4px;letter-spacing:.02em}
+  .login-card .sub{color:var(--ink-2);font-size:14px;margin:0 0 24px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+  .field input,.field textarea{
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;font-size:16px;appearance:none;
+  }
+  .field input:focus,.field textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:1px solid transparent;border-radius:10px;padding:12px 18px;
+    font-weight:700;font-size:15px;background:var(--ink);color:var(--bg);
+    transition:opacity .15s ease;
+  }
+  .btn:active{opacity:.75}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .btn-accent{background:var(--accent);color:var(--accent-ink);width:100%}
+  .btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--line)}
+  .btn-small{padding:8px 12px;font-size:13px;border-radius:8px}
+  .form-error{display:none;background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger-line);border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:14px}
+  .form-error.show{display:block}
+
+  /* ---------- app header ---------- */
+  .app-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 2px 18px}
+  .app-head h1{font-size:30px;margin:0;line-height:1.1;letter-spacing:.02em}
+  .today-line{color:var(--ink-2);font-size:13px;margin-top:4px}
+  .head-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .count-chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--ink-2);white-space:nowrap}
+  .icon-btn{
+    width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+    display:inline-flex;align-items:center;justify-content:center;color:var(--ink-2);flex-shrink:0;
+  }
+  .icon-btn svg{width:19px;height:19px}
+
+  /* ---------- add form ---------- */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+  .add-card{padding:16px;margin-bottom:18px}
+  .add-title-row{display:flex;gap:10px}
+  .add-title-row input{
+    flex:1;min-width:0;border:none;background:transparent;font-size:17px;font-weight:600;padding:6px 2px;
+  }
+  .add-title-row input:focus{outline:none}
+  .add-title-row input::placeholder{color:var(--ink-3);font-weight:500}
+  .add-submit{
+    background:var(--accent);color:var(--accent-ink);border:none;border-radius:10px;
+    padding:10px 18px;font-weight:700;font-size:15px;flex-shrink:0;
+  }
+  .add-submit[disabled]{opacity:.45}
+  .add-meta{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .add-meta .due-field{
+    display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
+    border-radius:9px;padding:7px 10px;font-size:14px;color:var(--ink-2);
+  }
+  .add-meta input[type="date"]{border:none;background:transparent;font-size:14px;padding:0;color:var(--ink)}
+  .add-meta input[type="date"]:focus{outline:none}
+  .note-toggle{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:14px;color:var(--ink-2)}
+  .note-area{margin-top:12px;display:none}
+  .note-area.open{display:block}
+  .note-area textarea{
+    width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;
+    padding:10px 12px;font-size:15px;resize:vertical;min-height:64px;
+  }
+
+  /* ---------- filter ---------- */
+  .filter{display:flex;background:var(--surface-2);border-radius:11px;padding:3px;margin-bottom:14px}
+  .filter button{
+    flex:1;border:none;background:transparent;border-radius:8px;padding:8px 4px;
+    font-size:14px;font-weight:600;color:var(--ink-2);
+  }
+  .filter button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .filter .n{font-size:12px;color:var(--ink-3);margin-left:4px;font-weight:600}
+
+  /* ---------- list ---------- */
+  .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .task{
+    display:flex;gap:12px;align-items:flex-start;background:var(--surface);
+    border:1px solid var(--line);border-radius:14px;padding:14px 14px 14px 12px;
+  }
+  .task.overdue{border-color:var(--danger-line);background:var(--danger-soft)}
+  .task.done-task{opacity:.62}
+  .check{
+    width:27px;height:27px;border-radius:50%;border:2px solid var(--ink-3);background:transparent;
+    flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;padding:0;
+    transition:background .12s ease,border-color .12s ease;
+  }
+  .check svg{width:15px;height:15px;opacity:0;transform:scale(.6);transition:opacity .12s ease,transform .12s ease}
+  .check[aria-checked="true"]{background:var(--ok);border-color:var(--ok)}
+  .check[aria-checked="true"] svg{opacity:1;transform:scale(1)}
+  .task.overdue .check{border-color:var(--danger)}
+  .task-body{flex:1;min-width:0}
+  .task-title{font-size:16px;font-weight:600;word-break:break-word}
+  .task.done-task .task-title{text-decoration:line-through;color:var(--ink-2)}
+  .task-note{font-size:14px;color:var(--ink-2);margin-top:3px;white-space:pre-wrap;word-break:break-word}
+  .task-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--ink-2)}
+  .badge svg{width:12px;height:12px}
+  .badge.today{background:var(--warn-soft);color:var(--warn)}
+  .badge.overdue{background:var(--danger);color:#fff}
+  .badge.doneb{background:var(--ok-soft);color:var(--ok)}
+  .task-actions{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+  .mini-btn{
+    width:34px;height:34px;border:none;background:transparent;border-radius:8px;color:var(--ink-3);
+    display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .mini-btn svg{width:17px;height:17px}
+  .mini-btn:active{background:var(--surface-2)}
+
+  /* edit form inside task */
+  .edit-form{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+  .edit-form input[type="text"],.edit-form textarea{
+    width:100%;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:10px 12px;font-size:15px;
+  }
+  .edit-form textarea{resize:vertical;min-height:56px}
+  .edit-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .edit-row input[type="date"]{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 10px;font-size:14px}
+  .edit-btns{display:flex;gap:8px;margin-left:auto}
+  .btn-save{background:var(--accent);color:var(--accent-ink);border:none;border-radius:9px;padding:9px 16px;font-weight:700;font-size:14px}
+  .btn-cancel{background:transparent;border:1px solid var(--line);border-radius:9px;padding:9px 14px;font-size:14px;color:var(--ink-2)}
+
+  .empty{
+    text-align:center;color:var(--ink-3);padding:44px 16px;font-size:15px;
+    border:1.5px dashed var(--line);border-radius:14px;
+  }
+  .empty strong{display:block;color:var(--ink-2);font-size:16px;margin-bottom:4px}
+  .loading{text-align:center;color:var(--ink-3);padding:36px 0;font-size:14px}
+
+  /* ---------- obsidian ---------- */
+  .obsidian{margin-top:26px;padding:18px}
+  .obsidian h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .obsidian h2 svg{width:18px;height:18px}
+  .obsidian p{font-size:13px;color:var(--ink-2);margin:0 0 14px}
+  .obsidian-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .obsidian-btns .btn{flex:1;min-width:140px}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,16px);
+    background:var(--ink);color:var(--bg);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;
+    opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:50;
+    max-width:calc(100vw - 32px);text-align:center;box-shadow:var(--shadow);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.err{background:var(--danger);color:#fff}
+
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  @media (min-width:560px){
+    .wrap{padding-top:32px}
+    .task-actions{flex-direction:row}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<!-- ======== ログイン画面 ======== -->
+<div id="loginView" class="login-wrap" hidden>
+  <form class="login-card" id="loginForm" novalidate>
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.8 9.8 18 19.5 6.5" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h1>TODO</h1>
+    <p class="sub">サインインしてタスクを開く</p>
+    <div class="form-error" id="loginError" role="alert"></div>
+    <div class="field">
+      <label for="loginEmail">メールアドレス</label>
+      <input id="loginEmail" type="email" autocomplete="email" inputmode="email" required />
+    </div>
+    <div class="field">
+      <label for="loginPassword">パスワード</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" required />
+    </div>
+    <button class="btn btn-accent" id="loginBtn" type="submit">サインイン</button>
+  </form>
+</div>
+
+<!-- ======== アプリ画面 ======== -->
+<div id="appView" class="wrap" hidden>
+  <header class="app-head">
+    <div>
+      <h1>TODO</h1>
+      <div class="today-line" id="todayLine"></div>
+    </div>
+    <div class="head-actions">
+      <span class="count-chip" id="countChip"></span>
+      <button class="icon-btn" id="logoutBtn" type="button" aria-label="サインアウト" title="サインアウト">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <form class="card add-card" id="addForm">
+    <div class="add-title-row">
+      <input id="newTitle" type="text" placeholder="やることを入力…" autocomplete="off" maxlength="200" />
+      <button class="add-submit" id="addBtn" type="submit">追加</button>
+    </div>
+    <div class="add-meta">
+      <label class="due-field">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        期限
+        <input id="newDue" type="date" aria-label="期限日" />
+      </label>
+      <button class="note-toggle" id="noteToggle" type="button" aria-expanded="false">＋ メモ</button>
+    </div>
+    <div class="note-area" id="noteArea">
+      <textarea id="newNote" placeholder="メモ（任意）" maxlength="2000"></textarea>
+    </div>
+  </form>
+
+  <div class="filter" role="group" aria-label="表示フィルタ">
+    <button type="button" data-filter="open" aria-pressed="true">未完了<span class="n" id="nOpen"></span></button>
+    <button type="button" data-filter="done" aria-pressed="false">完了<span class="n" id="nDone"></span></button>
+    <button type="button" data-filter="all" aria-pressed="false">全部<span class="n" id="nAll"></span></button>
+  </div>
+
+  <div class="loading" id="listLoading">読み込み中…</div>
+  <ul class="list" id="taskList"></ul>
+  <div class="empty" id="emptyState" hidden></div>
+
+  <section class="card obsidian" aria-labelledby="obsidianTitle">
+    <h2 id="obsidianTitle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Obsidianと連携
+    </h2>
+    <p>未完了タスクをMarkdownのチェックリストとして書き出せます。コピーしてノートに貼るか、そのままObsidianで新規ノートとして開けます。</p>
+    <div class="obsidian-btns">
+      <button class="btn btn-ghost btn-small" id="copyMdBtn" type="button">Markdownをコピー</button>
+      <button class="btn btn-ghost btn-small" id="openObsidianBtn" type="button">Obsidianで開く</button>
+      <button class="btn btn-ghost btn-small" id="downloadMdBtn" type="button">.mdをダウンロード</button>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===== PWA manifest（単一HTML内に埋め込み、Blob URLで登録） ===== */
+  var iconSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23171a1f'/%3E%3Cpath d='M18 33.5 27.5 43 46 22' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E";
+  try {
+    var manifest = {
+      name: "TODO",
+      short_name: "TODO",
+      description: "クラウド同期のTODOリスト",
+      lang: "ja",
+      display: "standalone",
+      start_url: ".",
+      scope: ".",
+      background_color: "#f4f4f1",
+      theme_color: "#171a1f",
+      icons: [
+        { src: iconSvg, sizes: "any", type: "image/svg+xml", purpose: "any" },
+        { src: iconSvg, sizes: "192x192", type: "image/svg+xml", purpose: "any" },
+        { src: iconSvg, sizes: "512x512", type: "image/svg+xml", purpose: "any" }
+      ]
+    };
+    var blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+    var link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = URL.createObjectURL(blob);
+    document.head.appendChild(link);
+  } catch (e) { /* manifestが作れなくても本体は動く */ }
+
+  /* ===== Supabase 設定 ===== */
+  var SUPABASE_URL = "https://piwdjqobechdgqcxtbmb.supabase.co";
+  var ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpd2RqcW9iZWNoZGdxY3h0Ym1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NzY5NDcsImV4cCI6MjEwOTU1Mjk0N30.ZUEcho3As2Ny1xEsifs3sPpHg7N0ZgHJeiosH52ZjAk";
+  var SESSION_KEY = "todo-cloud-auth-v1";
+
+  /* ===== 状態 ===== */
+  var session = null;        // {access_token, refresh_token, expires_at, user}
+  var tasks = [];
+  var filter = "open";       // open | done | all
+  var editingId = null;
+  var refreshTimer = null;
+
+  /* ===== DOM ===== */
+  function $(id){ return document.getElementById(id); }
+  var loginView = $("loginView"), appView = $("appView");
+  var loginForm = $("loginForm"), loginError = $("loginError"), loginBtn = $("loginBtn");
+  var taskList = $("taskList"), emptyState = $("emptyState"), listLoading = $("listLoading");
+  var toastEl = $("toast");
+  var toastTimer = null;
+
+  function toast(msg, isErr){
+    toastEl.textContent = msg;
+    toastEl.className = "toast show" + (isErr ? " err" : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.className = "toast"; }, 2600);
+  }
+
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  /* ===== 日付ユーティリティ ===== */
+  function todayStr(){
+    var d = new Date();
+    var m = String(d.getMonth()+1).padStart(2,"0");
+    var day = String(d.getDate()).padStart(2,"0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+  var WEEK = ["日","月","火","水","木","金","土"];
+  function fmtDue(due){
+    if (!due) return "";
+    var p = due.split("-");
+    var d = new Date(Number(p[0]), Number(p[1])-1, Number(p[2]));
+    return Number(p[1]) + "月" + Number(p[2]) + "日（" + WEEK[d.getDay()] + "）";
+  }
+  function fmtTodayLine(){
+    var d = new Date();
+    return d.getFullYear() + "年" + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEK[d.getDay()] + "）";
+  }
+
+  /* ===== セッション保存 ===== */
+  function saveSession(){
+    try {
+      if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      else localStorage.removeItem(SESSION_KEY);
+    } catch (e) {}
+  }
+  function loadSession(){
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  /* ===== Supabase Auth / REST ===== */
+  function authHeaders(extra){
+    var h = {
+      "apikey": ANON_KEY,
+      "Authorization": "Bearer " + (session ? session.access_token : ANON_KEY)
+    };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+
+  function handleAuthResponse(data){
+    session = {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: Date.now() + (data.expires_in ? data.expires_in * 1000 : 3600 * 1000),
+      user: data.user || (session && session.user) || null
+    };
+    saveSession();
+    scheduleRefresh();
+  }
+
+  function scheduleRefresh(){
+    clearTimeout(refreshTimer);
+    if (!session) return;
+    var ms = session.expires_at - Date.now() - 60 * 1000;
+    if (ms < 5000) ms = 5000;
+    refreshTimer = setTimeout(function(){ refreshSession(false); }, ms);
+  }
+
+  function refreshSession(manual){
+    if (!session || !session.refresh_token) return Promise.resolve(false);
+    return fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: { "apikey": ANON_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: session.refresh_token })
+    }).then(function(res){
+      if (!res.ok) throw new Error("refresh failed");
+      return res.json();
+    }).then(function(data){
+      handleAuthResponse(data);
+      return true;
+    }).catch(function(){
+      if (!manual) { signOutLocal(); showLogin(); }
+      return false;
+    });
+  }
+
+  function ensureFresh(){
+    if (!session) return Promise.resolve(false);
+    if (session.expires_at - Date.now() > 60 * 1000) return Promise.resolve(true);
+    return refreshSession(true);
+  }
+
+  function signIn(email, password){
+    return fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: { "apikey": ANON_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email, password: password })
+    }).then(function(res){
+      return res.json().then(function(data){
+        if (!res.ok) {
+          var msg = (data && (data.error_description || data.msg || data.message)) || "";
+          throw new Error(msg);
+        }
+        return data;
+      });
+    }).then(function(data){
+      handleAuthResponse(data);
+    });
+  }
+
+  function signOut(){
+    var token = session && session.access_token;
+    signOutLocal();
+    showLogin();
+    if (token) {
+      fetch(SUPABASE_URL + "/auth/v1/logout", {
+        method: "POST",
+        headers: { "apikey": ANON_KEY, "Authorization": "Bearer " + token }
+      }).catch(function(){});
+    }
+  }
+  function signOutLocal(){
+    session = null;
+    tasks = [];
+    editingId = null;
+    clearTimeout(refreshTimer);
+    saveSession();
+  }
+
+  /* REST: 401なら1回だけリフレッシュして再試行 */
+  function rest(path, options){
+    options = options || {};
+    return ensureFresh().then(function(){
+      var opts = {
+        method: options.method || "GET",
+        headers: authHeaders(Object.assign({ "Content-Type": "application/json" }, options.headers || {}))
+      };
+      if (options.body !== undefined) opts.body = JSON.stringify(options.body);
+      return fetch(SUPABASE_URL + "/rest/v1/" + path, opts).then(function(res){
+        if (res.status === 401 && session) {
+          return refreshSession(true).then(function(ok){
+            if (!ok) throw new Error("auth");
+            opts.headers = authHeaders(Object.assign({ "Content-Type": "application/json" }, options.headers || {}));
+            return fetch(SUPABASE_URL + "/rest/v1/" + path, opts);
+          });
+        }
+        return res;
+      });
+    }).then(function(res){
+      if (res.status === 204) return null;
+      return res.text().then(function(text){
+        var data = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) {}
+        if (!res.ok) {
+          var err = new Error((data && (data.message || data.hint)) || ("HTTP " + res.status));
+          err.status = res.status;
+          throw err;
+        }
+        return data;
+      });
+    });
+  }
+
+  /* ===== 画面切り替え ===== */
+  function showLogin(){
+    appView.hidden = true;
+    loginView.hidden = false;
+    taskList.innerHTML = "";
+  }
+  function showApp(){
+    loginView.hidden = true;
+    appView.hidden = false;
+    $("todayLine").textContent = fmtTodayLine();
+  }
+
+  /* ===== タスク取得・並び替え ===== */
+  function sortTasks(list){
+    return list.slice().sort(function(a, b){
+      if (a.done !== b.done) return a.done ? 1 : -1;               // 未完了を上
+      var ad = a.due || "9999-12-31", bd = b.due || "9999-12-31";  // 期限の早い順（なしは最後）
+      if (ad !== bd) return ad < bd ? -1 : 1;
+      var ac = a.created_at || "", bc = b.created_at || "";        // 同条件では作成順
+      if (ac !== bc) return ac < bc ? -1 : 1;
+      return (a.id || 0) - (b.id || 0);
+    });
+  }
+
+  function loadTasks(){
+    listLoading.style.display = "block";
+    emptyState.hidden = true;
+    return rest("todos?select=*").then(function(data){
+      tasks = Array.isArray(data) ? data : [];
+      listLoading.style.display = "none";
+      render();
+    }).catch(function(err){
+      listLoading.style.display = "none";
+      if (err && err.message === "auth") { showLogin(); return; }
+      toast("読み込みに失敗しました。通信状態を確認してください", true);
+      render();
+    });
+  }
+
+  /* ===== 描画 ===== */
+  function visibleTasks(){
+    var sorted = sortTasks(tasks);
+    if (filter === "open") return sorted.filter(function(t){ return !t.done; });
+    if (filter === "done") return sorted.filter(function(t){ return t.done; });
+    return sorted;
+  }
+
+  function render(){
+    var openCount = tasks.filter(function(t){ return !t.done; }).length;
+    var doneCount = tasks.length - openCount;
+    $("nOpen").textContent = openCount;
+    $("nDone").textContent = doneCount;
+    $("nAll").textContent = tasks.length;
+    $("countChip").textContent = "残り " + openCount + " 件";
+
+    var list = visibleTasks();
+    taskList.innerHTML = list.map(renderTask).join("");
+
+    if (list.length === 0) {
+      emptyState.hidden = false;
+      if (filter === "open") emptyState.innerHTML = "<strong>未完了のタスクはありません</strong>全部片付いています。";
+      else if (filter === "done") emptyState.innerHTML = "<strong>完了したタスクはまだありません</strong>チェックを入れるとここに並びます。";
+      else emptyState.innerHTML = "<strong>タスクがありません</strong>上の入力欄から追加できます。";
+    } else {
+      emptyState.hidden = true;
+    }
+  }
+
+  var calIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+  var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.8 9.8 18 19.5 6.5"/></svg>';
+  var editSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
+  var trashSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+  function renderTask(t){
+    if (editingId === t.id) return renderEditForm(t);
+    var today = todayStr();
+    var overdue = !t.done && t.due && t.due < today;
+    var isToday = !t.done && t.due && t.due === today;
+    var cls = "task" + (overdue ? " overdue" : "") + (t.done ? " done-task" : "");
+    var badges = "";
+    if (t.due) {
+      if (overdue) badges += '<span class="badge overdue">' + calIcon + esc(fmtDue(t.due)) + ' ・ 期限切れ</span>';
+      else if (isToday) badges += '<span class="badge today">' + calIcon + '今日が期限</span>';
+      else badges += '<span class="badge">' + calIcon + esc(fmtDue(t.due)) + '</span>';
+    }
+    if (t.done && t.done_at) {
+      var d = new Date(t.done_at);
+      badges += '<span class="badge doneb">' + (d.getMonth()+1) + "月" + d.getDate() + "日 完了</span>";
+    }
+    return '<li class="' + cls + '" data-id="' + t.id + '">' +
+      '<button class="check" type="button" role="checkbox" aria-checked="' + (t.done ? "true" : "false") + '" aria-label="' + esc(t.title) + 'を' + (t.done ? "未完了に戻す" : "完了にする") + '" data-act="toggle">' + checkSvg + '</button>' +
+      '<div class="task-body">' +
+        '<div class="task-title">' + esc(t.title) + '</div>' +
+        (t.note ? '<div class="task-note">' + esc(t.note) + '</div>' : "") +
+        (badges ? '<div class="task-meta">' + badges + '</div>' : "") +
+      '</div>' +
+      '<div class="task-actions">' +
+        '<button class="mini-btn" type="button" data-act="edit" aria-label="編集">' + editSvg + '</button>' +
+        '<button class="mini-btn" type="button" data-act="del" aria-label="削除">' + trashSvg + '</button>' +
+      '</div>' +
+    '</li>';
+  }
+
+  function renderEditForm(t){
+    return '<li class="task" data-id="' + t.id + '">' +
+      '<form class="edit-form" data-editform="' + t.id + '">' +
+        '<input type="text" name="title" value="' + esc(t.title) + '" maxlength="200" aria-label="タイトル" />' +
+        '<div class="edit-row">' +
+          '<input type="date" name="due" value="' + esc(t.due || "") + '" aria-label="期限日" />' +
+          '<div class="edit-btns">' +
+            '<button class="btn-cancel" type="button" data-act="cancel">キャンセル</button>' +
+            '<button class="btn-save" type="submit">保存</button>' +
+          '</div>' +
+        '</div>' +
+        '<textarea name="note" placeholder="メモ（任意）" maxlength="2000" aria-label="メモ">' + esc(t.note || "") + '</textarea>' +
+      '</form>' +
+    '</li>';
+  }
+
+  /* ===== 操作 ===== */
+  function findTask(id){
+    for (var i = 0; i < tasks.length; i++) if (tasks[i].id === id) return tasks[i];
+    return null;
+  }
+
+  function toggleTask(t){
+    var nowDone = !t.done;
+    var patch = { done: nowDone, done_at: nowDone ? new Date().toISOString() : null };
+    t.done = nowDone; t.done_at = patch.done_at;   // 先に画面へ反映
+    render();
+    rest("todos?id=eq." + t.id, {
+      method: "PATCH",
+      headers: { "Prefer": "return=representation" },
+      body: patch
+    }).then(function(data){
+      if (Array.isArray(data) && data[0]) {
+        var idx = tasks.indexOf(t);
+        if (idx >= 0) tasks[idx] = data[0];
+      }
+      render();
+    }).catch(function(){
+      t.done = !nowDone; t.done_at = nowDone ? null : t.done_at;
+      render();
+      toast("更新に失敗しました", true);
+    });
+  }
+
+  function deleteTask(t, li){
+    if (li.dataset.confirming === "1") {
+      rest("todos?id=eq." + t.id, { method: "DELETE" }).then(function(){
+        tasks = tasks.filter(function(x){ return x.id !== t.id; });
+        if (editingId === t.id) editingId = null;
+        render();
+        toast("削除しました");
+      }).catch(function(){ toast("削除に失敗しました", true); });
+    } else {
+      li.dataset.confirming = "1";
+      toast("もう一度ゴミ箱を押すと「" + t.title + "」を削除します");
+      setTimeout(function(){ if (li.isConnected) li.dataset.confirming = ""; }, 3000);
+    }
+  }
+
+  function saveEdit(form, t){
+    var title = form.title.value.trim();
+    if (!title) { toast("タイトルを入力してください", true); form.title.focus(); return; }
+    var patch = {
+      title: title,
+      due: form.due.value ? form.due.value : null,
+      note: form.note.value
+    };
+    rest("todos?id=eq." + t.id, {
+      method: "PATCH",
+      headers: { "Prefer": "return=representation" },
+      body: patch
+    }).then(function(data){
+      if (Array.isArray(data) && data[0]) {
+        var idx = tasks.indexOf(t);
+        if (idx >= 0) tasks[idx] = data[0];
+      } else {
+        t.title = patch.title; t.due = patch.due; t.note = patch.note;
+      }
+      editingId = null;
+      render();
+      toast("保存しました");
+    }).catch(function(){ toast("保存に失敗しました", true); });
+  }
+
+  /* リスト内のクリック（委譲） */
+  taskList.addEventListener("click", function(e){
+    var btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    var li = e.target.closest("li[data-id]");
+    if (!li) return;
+    var t = findTask(Number(li.dataset.id));
+    if (!t) return;
+    var act = btn.dataset.act;
+    if (act === "toggle") toggleTask(t);
+    else if (act === "del") deleteTask(t, li);
+    else if (act === "edit") { editingId = t.id; render(); var inp = taskList.querySelector('form[data-editform="' + t.id + '"] input[name="title"]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
+    else if (act === "cancel") { editingId = null; render(); }
+  });
+  taskList.addEventListener("submit", function(e){
+    var form = e.target.closest("form[data-editform]");
+    if (!form) return;
+    e.preventDefault();
+    var t = findTask(Number(form.dataset.editform));
+    if (t) saveEdit(form, t);
+  });
+
+  /* フィルタ */
+  document.querySelectorAll(".filter button").forEach(function(b){
+    b.addEventListener("click", function(){
+      filter = b.dataset.filter;
+      document.querySelectorAll(".filter button").forEach(function(x){
+        x.setAttribute("aria-pressed", x === b ? "true" : "false");
+      });
+      render();
+    });
+  });
+
+  /* 追加フォーム */
+  $("noteToggle").addEventListener("click", function(){
+    var area = $("noteArea");
+    var open = area.classList.toggle("open");
+    this.setAttribute("aria-expanded", open ? "true" : "false");
+    this.textContent = open ? "－ メモ" : "＋ メモ";
+    if (open) $("newNote").focus();
+  });
+
+  $("addForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var title = $("newTitle").value.trim();
+    if (!title) { $("newTitle").focus(); return; }
+    var btn = $("addBtn");
+    btn.disabled = true;
+    var body = {
+      title: title,
+      due: $("newDue").value ? $("newDue").value : null,
+      note: $("newNote").value || ""
+    };
+    rest("todos", {
+      method: "POST",
+      headers: { "Prefer": "return=representation" },
+      body: body
+    }).then(function(data){
+      if (Array.isArray(data) && data[0]) tasks.push(data[0]);
+      $("newTitle").value = "";
+      $("newDue").value = "";
+      $("newNote").value = "";
+      $("noteArea").classList.remove("open");
+      $("noteToggle").textContent = "＋ メモ";
+      $("noteToggle").setAttribute("aria-expanded", "false");
+      if (filter === "done") {
+        filter = "open";
+        document.querySelectorAll(".filter button").forEach(function(x){
+          x.setAttribute("aria-pressed", x.dataset.filter === "open" ? "true" : "false");
+        });
+      }
+      render();
+      $("newTitle").focus();
+    }).catch(function(){
+      toast("追加に失敗しました", true);
+    }).then(function(){ btn.disabled = false; });
+  });
+
+  /* ===== Obsidian連携 ===== */
+  function buildMarkdown(){
+    var open = sortTasks(tasks).filter(function(t){ return !t.done; });
+    var done = sortTasks(tasks).filter(function(t){ return t.done; });
+    var lines = ["# TODO", ""];
+    if (open.length === 0 && done.length === 0) lines.push("（タスクはありません）");
+    open.forEach(function(t){
+      var line = "- [ ] " + t.title;
+      if (t.due) line += " 📅 " + t.due;
+      lines.push(line);
+      if (t.note) lines.push("  - " + String(t.note).split("\n").join("\n  - "));
+    });
+    if (done.length) {
+      if (open.length) lines.push("");
+      lines.push("## 完了", "");
+      done.forEach(function(t){
+        var line = "- [x] " + t.title;
+        if (t.due) line += " 📅 " + t.due;
+        lines.push(line);
+      });
+    }
+    return lines.join("\n");
+  }
+
+  function copyText(text){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function(resolve, reject){
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy") ? resolve() : reject(new Error("copy")); }
+      catch (e) { reject(e); }
+      document.body.removeChild(ta);
+    });
+  }
+
+  $("copyMdBtn").addEventListener("click", function(){
+    copyText(buildMarkdown()).then(function(){
+      toast("Markdownをコピーしました");
+    }).catch(function(){ toast("コピーに失敗しました", true); });
+  });
+
+  $("openObsidianBtn").addEventListener("click", function(){
+    var name = "TODO " + todayStr();
+    var url = "obsidian://new?name=" + encodeURIComponent(name) + "&content=" + encodeURIComponent(buildMarkdown());
+    var a = document.createElement("a");
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast("Obsidianを開いています");
+  });
+
+  $("downloadMdBtn").addEventListener("click", function(){
+    var blob = new Blob([buildMarkdown()], { type: "text/markdown;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "TODO-" + todayStr() + ".md";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    toast("ダウンロードしました");
+  });
+
+  /* ===== ログイン / ログアウト ===== */
+  loginForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    loginError.classList.remove("show");
+    var email = $("loginEmail").value.trim();
+    var password = $("loginPassword").value;
+    if (!email || !password) {
+      loginError.textContent = "メールアドレスとパスワードを入力してください。";
+      loginError.classList.add("show");
+      return;
+    }
+    loginBtn.disabled = true;
+    loginBtn.textContent = "サインイン中…";
+    signIn(email, password).then(function(){
+      $("loginPassword").value = "";
+      showApp();
+      loadTasks();
+    }).catch(function(err){
+      var m = (err && err.message) || "";
+      if (/invalid login credentials/i.test(m)) loginError.textContent = "メールアドレスまたはパスワードが違います。";
+      else if (/email not confirmed/i.test(m)) loginError.textContent = "メールアドレスの確認が完了していません。";
+      else if (/failed to fetch|network/i.test(m)) loginError.textContent = "通信に失敗しました。接続を確認してもう一度お試しください。";
+      else loginError.textContent = "サインインできませんでした。" + (m ? "（" + m + "）" : "");
+      loginError.classList.add("show");
+    }).then(function(){
+      loginBtn.disabled = false;
+      loginBtn.textContent = "サインイン";
+    });
+  });
+
+  $("logoutBtn").addEventListener("click", function(){
+    signOut();
+    toast("サインアウトしました");
+  });
+
+  /* ===== 起動 ===== */
+  session = loadSession();
+  if (session && session.access_token) {
+    if (session.expires_at && session.expires_at - Date.now() <= 60 * 1000) {
+      refreshSession(true).then(function(ok){
+        if (ok) { showApp(); scheduleRefresh(); loadTasks(); }
+        else { signOutLocal(); showLogin(); }
+      });
+    } else {
+      showApp();
+      scheduleRefresh();
+      loadTasks();
+    }
+  } else {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>
