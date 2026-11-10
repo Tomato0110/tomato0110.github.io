@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>授業用アプリ Web版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
+<style>
+  :root{
+    color-scheme: light dark;
+    --bg:#faf7f0; --surface:#fffdf8; --surface-alt:#f3eee1; --text:#22304f; --dim:#7d7663;
+    --border:#e4dcc8; --accent:#d64545; --accent-soft:#fbe9e7; --ink:#22304f; --ink-soft:#eef1f8;
+    --radius:14px; --green:#1f7a4d; --green-soft:#e6f4ec;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#17181f; --surface:#21222c; --surface-alt:#2a2b38; --text:#ece7da; --dim:#a49c88; --border:#3a3b4a; --accent:#ff7a6b; --accent-soft:#3d2626; --ink:#ece7da; --ink-soft:#2a2f45; --green:#5ec98d; --green-soft:#1e3529; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:"Noto Sans JP",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .font-display{font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN",system-ui,sans-serif}
+  button{font-family:inherit;cursor:pointer}
+  input,textarea,select{font-family:inherit}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px 64px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+  .chip{border-radius:999px;padding:8px 16px;font-size:14px;font-weight:700;border:1px solid var(--border);background:var(--bg);color:var(--text)}
+  .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .btn-primary{width:100%;border:none;border-radius:var(--radius);background:var(--accent);color:#fff;padding:14px;font-size:17px;font-weight:900}
+  .btn-ink{border:none;border-radius:999px;background:var(--ink);color:var(--bg);padding:8px 16px;font-size:14px;font-weight:700}
+  .btn-ghost{border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text);padding:8px 16px;font-size:14px;font-weight:700}
+  .btn-dark-block{width:100%;border:none;border-radius:var(--radius);background:var(--ink);color:var(--bg);padding:12px;font-size:14px;font-weight:700}
+  .input{border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:999px;padding:9px 16px;font-size:14px}
+  .input:focus{outline:2px solid var(--ink);outline-offset:1px}
+  .badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
+  .badge-accent{background:var(--accent-soft);color:var(--accent)}
+  .badge-ink{background:var(--ink-soft);color:var(--ink)}
+  .badge-green{background:var(--green-soft);color:var(--green)}
+  .step-num{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:12px;font-weight:900;align-items:center;justify-content:center;margin-right:8px;vertical-align:2px}
+  @keyframes rec-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.82)}}
+  .rec-dot{width:12px;height:12px;border-radius:50%;background:var(--accent);display:inline-block;animation:rec-pulse 1.2s ease-in-out infinite}
+  @media (prefers-reduced-motion: reduce){.rec-dot{animation:none}}
+  .rec-btn{width:64px;height:64px;border-radius:50%;border:none;color:#fff;font-size:22px;font-weight:900;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .q-badge{flex-shrink:0;border-radius:999px;background:var(--ink);color:var(--bg);padding:2px 10px;font-size:12px;font-weight:900}
+  .notice{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:14px;margin-top:16px}
+  .hidden{display:none !important}
+  .progress{height:8px;border-radius:999px;background:var(--surface-alt);overflow:hidden}
+  .progress > div{height:100%;background:var(--accent);transition:width .2s}
+  details.transcript-details summary{cursor:pointer;font-weight:700;font-size:14px}
+  .tabbar{display:flex;gap:8px;flex-wrap:wrap}
+  .lesson-row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;color:var(--text)}
+  .qa-user{margin-left:32px;background:var(--ink-soft);border-radius:var(--radius);padding:8px 12px}
+  .qa-ai{margin-right:32px;background:var(--surface-alt);border-radius:var(--radius);padding:8px 12px}
+  .web-note{font-size:12px;color:var(--dim);line-height:1.7}
+  img.photo{width:100%;border-radius:var(--radius);border:1px solid var(--border);object-fit:cover;max-height:420px;background:var(--surface-alt)}
+  .icon{width:18px;height:18px;vertical-align:-3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HOME ============ -->
+  <div id="homeView">
+    <div style="padding-top:24px">
+      <p style="margin:0"><span class="badge badge-accent">Web版 ・ ブラウザだけで動く</span></p>
+      <h1 class="font-display" style="font-size:26px;font-weight:900;line-height:1.4;margin:12px 0 0">聞いてなくても、<br>最後に全部わかる。</h1>
+      <ol style="list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:6px;font-size:14px">
+        <li><span class="font-display" style="font-weight:900;color:var(--accent);margin-right:4px">1</span>最初にプリントを撮る（文字を読み取ります）</li>
+        <li><span class="font-display" style="font-weight:900;color:var(--accent);margin-right:4px">2</span>授業中は録音ボタンを押しておくだけ（音声認識で文字起こし）</li>
+        <li><span class="font-display" style="font-weight:900;color:var(--accent);margin-right:4px">3</span>終わったら、先生が言った答えとまとめが全部出る</li>
+      </ol>
+      <p class="web-note" style="margin-top:12px">このWeb版はデータ保存用のサーバーを使わず、このタブの中だけで処理します。写真の読み取り（OCR）と文字起こしはブラウザの機能で行い、まとめと答え合わせは文字起こしの内容から自動で組み立てます。タブを閉じると記録は消えるので、終わったら下の「テキストで保存」で残してください。</p>
+    </div>
+
+    <section class="card" style="margin-top:20px">
+      <h2 class="font-display" style="font-size:16px;font-weight:900;margin:0">新しい授業をはじめる</h2>
+      <div id="subjectChips" class="tabbar" style="margin-top:12px" role="group" aria-label="教科を選ぶ"></div>
+      <div id="customSubjectWrap" class="hidden" style="margin-top:12px">
+        <label for="customSubject" class="hidden">教科名を入力</label>
+        <input id="customSubject" class="input" style="width:100%" type="text" placeholder="教科名（例：保健体育）">
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <label for="lessonDate" style="font-size:14px;font-weight:700">日付</label>
+        <input id="lessonDate" class="input" type="date">
+      </div>
+      <button id="createBtn" class="btn-primary font-display" style="margin-top:16px">この授業をはじめる</button>
+      <p id="createError" class="hidden" role="alert" style="color:var(--accent);font-size:14px;margin:8px 0 0"></p>
+    </section>
+
+    <section style="margin-top:32px">
+      <h2 class="font-display" style="font-size:18px;font-weight:900;margin:0">これまでの授業 <span style="font-size:12px;color:var(--dim);font-weight:500">（このタブを開いている間だけ）</span></h2>
+      <div id="lessonList" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
+    </section>
+  </div>
+
+  <!-- ============ LESSON ============ -->
+  <div id="lessonView" class="hidden">
+    <div style="display:flex;align-items:center;gap:12px;padding-top:16px">
+      <button id="backBtn" aria-label="授業一覧に戻る" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);font-size:18px;color:var(--text);flex-shrink:0">←</button>
+      <div style="flex:1;min-width:0">
+        <h1 id="lessonTitle" class="font-display" style="font-size:20px;font-weight:900;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></h1>
+        <p id="lessonDateLabel" style="font-size:12px;color:var(--dim);margin:2px 0 0"></p>
+      </div>
+      <span id="lessonStatus" class="badge"></span>
+    </div>
+
+    <div id="noticeBox" class="notice hidden"><span id="noticeText"></span><button id="noticeClose" aria-label="お知らせを閉じる" style="float:right;border:none;background:none;color:var(--dim);font-size:16px">✕</button></div>
+
+    <input id="printInput" type="file" accept="image/*" class="hidden" aria-label="プリントの写真を選ぶ">
+    <input id="boardInput" type="file" accept="image/*" class="hidden" aria-label="板書の写真を選ぶ">
+
+    <!-- ACTIVE FLOW -->
+    <div id="activeFlow">
+      <section style="margin-top:24px">
+        <h2 class="font-display" style="font-size:16px;font-weight:700;margin:0"><span class="step-num">1</span>最初にプリントを撮る</h2>
+        <div class="card" style="margin-top:12px">
+          <button id="printBtn" class="btn-dark-block">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            プリントの写真を送る
+          </button>
+          <p style="font-size:12px;color:var(--dim);margin:8px 0 0;line-height:1.7">写真から文字を読み取り（OCR）、問題を自動で登録します。読み取りは端末・ブラウザによって数十秒かかることがあります。うまく読めなかった問題は下の手入力で追加・編集できます。</p>
+          <div id="ocrProgressWrap" class="hidden" style="margin-top:12px">
+            <p id="ocrProgressLabel" style="font-size:13px;margin:0 0 6px">読み取り中…</p>
+            <div class="progress"><div id="ocrProgressBar" style="width:0%"></div></div>
+          </div>
+          <div id="printPhotos" style="margin-top:12px;display:flex;flex-direction:column;gap:12px"></div>
+          <div id="questionList" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <input id="qLabelInput" class="input" style="width:76px" type="text" placeholder="問1" aria-label="問題番号">
+            <input id="qTextInput" class="input" style="flex:1;min-width:160px" type="text" placeholder="問題を手入力で追加" aria-label="問題文を手入力で追加">
+            <button id="qAddBtn" class="btn-ink">追加</button>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-top:32px">
+        <h2 class="font-display" style="font-size:16px;font-weight:700;margin:0"><span class="step-num">2</span>授業中は録音しておく</h2>
+        <div class="card" style="margin-top:12px">
+          <div style="display:flex;gap:16px;align-items:center">
+            <button id="recBtn" class="rec-btn" style="background:var(--accent)" aria-label="録音をはじめる">●</button>
+            <div>
+              <p id="recLabel" class="font-display" style="font-size:18px;font-weight:700;margin:0">録音をはじめる</p>
+              <p id="recHint" style="font-size:12px;color:var(--dim);margin:4px 0 0;line-height:1.6"></p>
+            </div>
+          </div>
+          <p id="recError" class="hidden" role="alert" style="color:var(--accent);font-size:14px;margin:12px 0 0"></p>
+          <div id="transcriptBox" style="margin-top:16px;max-height:256px;overflow-y:auto;background:var(--surface-alt);border-radius:var(--radius);padding:10px 12px" aria-label="文字起こし">
+            <p id="transcriptText" style="white-space:pre-wrap;font-size:14px;line-height:1.7;margin:0"></p>
+            <p id="transcriptEmpty" style="font-size:14px;color:var(--dim);margin:0">まだ文字起こしはありません。録音をはじめると、ここに先生の話が文字で残ります。</p>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <input id="manualInput" class="input" style="flex:1;min-width:0" type="text" placeholder="聞き取ったことを手入力で追加" aria-label="文字起こしを手入力で追加">
+            <button id="manualAddBtn" class="btn-ink" style="flex-shrink:0">追加</button>
+          </div>
+          <button id="editTranscriptBtn" class="hidden" style="margin-top:12px;border:none;background:none;text-decoration:underline;font-size:12px;font-weight:700;color:var(--dim);padding:0">文字起こしを編集する</button>
+          <div id="editTranscriptWrap" class="hidden" style="margin-top:8px">
+            <textarea id="transcriptEdit" rows="8" style="width:100%;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:var(--radius);padding:10px 12px;font-size:14px;line-height:1.7" aria-label="文字起こし全文を編集"></textarea>
+            <button id="saveTranscriptBtn" class="btn-ink" style="margin-top:8px">保存する</button>
+          </div>
+          <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+            <button id="boardBtn" style="width:100%;border:2px dashed var(--border);background:none;border-radius:var(--radius);padding:10px;font-size:14px;font-weight:700;color:var(--text)">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              板書の写真を追加
+            </button>
+            <div id="boardPhotos" style="margin-top:12px;display:flex;flex-direction:column;gap:12px"></div>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-top:32px">
+        <h2 class="font-display" style="font-size:16px;font-weight:700;margin:0"><span class="step-num">3</span>授業が終わったら</h2>
+        <button id="finishBtn" class="btn-primary font-display" style="margin-top:12px">授業をおわる → 答えとまとめを見る</button>
+        <p style="text-align:center;font-size:12px;color:var(--dim);margin:8px 0 0;line-height:1.7">文字起こしの中から先生が言った答えを問題ごとに探し、要約・重要用語・テストに出そうなところを組み立てます。</p>
+      </section>
+    </div>
+
+    <!-- FINISHED -->
+    <div id="finishedFlow" class="hidden">
+      <section style="margin-top:24px">
+        <h2 class="font-display" style="font-size:18px;font-weight:900;margin:0">プリントの答え <span id="answerCount" style="font-size:14px;color:var(--accent);font-weight:700"></span></h2>
+        <div id="answerList" style="margin-top:12px;display:flex;flex-direction:column;gap:12px"></div>
+      </section>
+
+      <section id="summarySection" class="hidden" style="margin-top:32px">
+        <h2 class="font-display" style="font-size:18px;font-weight:900;margin:0">5分で追いつくまとめ</h2>
+        <div class="card" style="margin-top:12px">
+          <ol id="summary3List" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"></ol>
+          <p id="detailSummary" style="white-space:pre-wrap;font-size:14px;line-height:1.8;margin:16px 0 0;border-top:1px solid var(--border);padding-top:12px"></p>
+        </div>
+        <div id="keyTermsCard" class="card hidden" style="margin-top:12px">
+          <h3 class="font-display" style="font-size:14px;font-weight:900;margin:0">大事な用語</h3>
+          <dl id="keyTermsList" style="margin:8px 0 0;display:flex;flex-direction:column;gap:8px"></dl>
+        </div>
+        <div id="testPointsCard" class="hidden" style="margin-top:12px;border:2px solid var(--accent);border-radius:var(--radius);background:var(--surface);padding:16px">
+          <h3 class="font-display" style="font-size:14px;font-weight:900;margin:0;color:var(--accent)">テストに出そうなところ</h3>
+          <ul id="testPointsList" style="margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px"></ul>
+        </div>
+      </section>
+
+      <section id="photosRecapSection" class="hidden" style="margin-top:32px">
+        <h2 class="font-display" style="font-size:18px;font-weight:900;margin:0">写真</h2>
+        <div class="card" style="margin-top:12px">
+          <div id="recapPrintPhotos" style="display:flex;flex-direction:column;gap:12px"></div>
+          <div id="recapBoardPhotos" style="display:flex;flex-direction:column;gap:12px;margin-top:12px"></div>
+        </div>
+      </section>
+
+      <section id="transcriptRecapSection" class="hidden" style="margin-top:32px">
+        <h2 class="font-display" style="font-size:18px;font-weight:900;margin:0">文字起こし</h2>
+        <div class="card" style="margin-top:12px;max-height:320px;overflow-y:auto">
+          <p id="transcriptRecap" style="white-space:pre-wrap;font-size:14px;line-height:1.7;margin:0"></p>
+        </div>
+      </section>
+
+      <div style="margin-top:24px;display:flex;gap:8px;flex-wrap:wrap">
+        <button id="reopenBtn" class="btn-ghost">授業中にもどす（続きを録音）</button>
+        <button id="downloadBtn" class="btn-ink">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          テキストで保存
+        </button>
+      </div>
+    </div>
+
+    <!-- Q&A -->
+    <section style="margin-top:40px">
+      <h2 class="font-display" style="font-size:18px;font-weight:900;margin:0">分からなかったところを聞く</h2>
+      <div class="card" style="margin-top:12px">
+        <div id="qaList" style="display:flex;flex-direction:column;gap:12px">
+          <p id="qaEmpty" style="font-size:14px;color:var(--dim);margin:0">この授業の内容なら何でも聞けます。文字起こしと板書の読み取り結果の中から、関連する部分を探して答えます。</p>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <input id="qaInput" class="input" style="flex:1;min-width:0" type="text" placeholder="例：判別式って何だっけ？" aria-label="授業内容への質問">
+          <button id="qaBtn" class="btn-ink" style="flex-shrink:0">聞く</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:40px;border-top:1px solid var(--border);padding-top:16px">
+      <div id="deleteConfirm" class="hidden" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <p style="flex:1;font-size:14px;margin:0;min-width:180px">この授業の記録を全部消しますか？</p>
+        <button id="deleteYes" style="border:none;border-radius:999px;background:var(--accent);color:#fff;padding:8px 16px;font-size:14px;font-weight:700">消す</button>
+        <button id="deleteNo" class="btn-ghost">やめる</button>
+      </div>
+      <button id="deleteBtn" style="border:none;background:none;text-decoration:underline;font-size:14px;font-weight:700;color:var(--dim);padding:0">この授業を削除</button>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var WEEKDAYS=["日","月","火","水","木","金","土"];
+var SUBJECTS=["数学","英語","国語","理科","社会","現代社会","経済","情報","その他"];
+
+/* ---------------- state (in-memory only, this tab) ---------------- */
+var lessons=[]; var nextLessonId=1; var nextQId=1; var nextPhotoId=1; var nextQaId=1;
+var currentId=null; var selectedSubject=SUBJECTS[0];
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function todayJst(){var n=new Date();var j=new Date(n.getTime()+9*3600*1000);return j.toISOString().slice(0,10);}
+function fmtDate(ymd){var d=new Date(ymd+"T00:00:00");if(isNaN(d.getTime()))return ymd;return (d.getMonth()+1)+"/"+d.getDate()+"（"+(WEEKDAYS[d.getDay()]||"")+"）";}
+function fmtDateLong(ymd){var d=new Date(ymd+"T00:00:00");if(isNaN(d.getTime()))return ymd;return (d.getMonth()+1)+"月"+d.getDate()+"日（"+(WEEKDAYS[d.getDay()]||"")+"）";}
+function current(){for(var i=0;i<lessons.length;i++)if(lessons[i].id===currentId)return lessons[i];return null;}
+function showNotice(msg){$("noticeText").textContent=msg;$("noticeBox").classList.remove("hidden");}
+$("noticeClose").addEventListener("click",function(){$("noticeBox").classList.add("hidden");});
+
+/* ---------------- home ---------------- */
+function renderSubjects(){
+  var box=$("subjectChips"); box.innerHTML="";
+  SUBJECTS.forEach(function(s){
+    var b=document.createElement("button"); b.type="button"; b.textContent=s;
+    b.className="chip"+(selectedSubject===s?" on":""); b.setAttribute("aria-pressed",selectedSubject===s?"true":"false");
+    b.addEventListener("click",function(){selectedSubject=s;renderSubjects();$("customSubjectWrap").classList.toggle("hidden",s!=="その他");});
+    box.appendChild(b);
+  });
+}
+function renderLessonList(){
+  var box=$("lessonList"); box.innerHTML="";
+  if(lessons.length===0){
+    box.innerHTML='<p style="border:1px dashed var(--border);background:var(--surface);border-radius:var(--radius);padding:24px 16px;text-align:center;font-size:14px;color:var(--dim);margin:0">まだ授業の記録がありません。<br>次の授業で「この授業をはじめる」からスタートしてください。</p>';
+    return;
+  }
+  lessons.slice().sort(function(a,b){return b.id-a.id;}).forEach(function(l){
+    var answered=l.questions.filter(function(q){return q.teacherAnswer;}).length;
+    var btn=document.createElement("button"); btn.type="button"; btn.className="lesson-row";
+    btn.setAttribute("aria-label",l.subject+" "+fmtDate(l.lessonDate)+"の授業を開く");
+    btn.innerHTML='<span class="font-display" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;font-weight:900">'+esc(l.subject)+'</span>'+
+      '<span style="flex-shrink:0;font-size:12px;color:var(--dim)">'+esc(fmtDate(l.lessonDate))+'</span>'+
+      (l.status==="active"
+        ? '<span class="badge badge-accent" style="flex-shrink:0">授業中</span>'
+        : '<span class="badge badge-ink" style="flex-shrink:0">答え '+answered+'/'+l.questions.length+'</span>');
+    btn.addEventListener("click",function(){openLesson(l.id);});
+    box.appendChild(btn);
+  });
+}
+$("createBtn").addEventListener("click",function(){
+  var subject=selectedSubject;
+  if(subject==="その他"){subject=$("customSubject").value.trim()||"その他";}
+  var date=$("lessonDate").value;
+  var err=$("createError");
+  if(!date){err.textContent="日付を選んでください。";err.classList.remove("hidden");return;}
+  err.classList.add("hidden");
+  var lesson={id:nextLessonId++,subject:subject,lessonDate:date,status:"active",transcript:"",questions:[],photos:[],qa:[],summary3:null,detailSummary:null,keyTerms:null,testPoints:null,createdAt:new Date().toISOString()};
+  lessons.push(lesson); renderLessonList(); openLesson(lesson.id);
+});
+$("lessonDate").value=todayJst();
+renderSubjects(); renderLessonList();
+
+/* ---------------- lesson view ---------------- */
+function openLesson(id){currentId=id;stopRecording(true);$("homeView").classList.add("hidden");$("lessonView").classList.remove("hidden");window.scrollTo(0,0);renderLesson();}
+$("backBtn").addEventListener("click",function(){stopRecording(true);currentId=null;$("lessonView").classList.add("hidden");$("homeView").classList.remove("hidden");renderLessonList();});
+
+function photoHTML(p,showText){
+  var fig='<figure style="margin:0"><img class="photo" src="'+p.url+'" alt="'+(p.kind==="print"?"プリントの写真":"板書の写真")+'">';
+  if(showText&&p.extractedText){fig+='<figcaption style="margin-top:4px;white-space:pre-wrap;background:var(--surface-alt);border-radius:var(--radius);padding:8px 12px;font-size:12px;line-height:1.6">'+(p.note?esc("（"+p.note+"）\n"):"")+esc(p.extractedText)+'</figcaption>';}
+  fig+='</figure>'; return fig;
+}
+function renderPhotos(){
+  var l=current(); if(!l)return;
+  var pp=l.photos.filter(function(p){return p.kind==="print";});
+  var bp=l.photos.filter(function(p){return p.kind==="board";});
+  $("printPhotos").innerHTML=pp.map(function(p){return photoHTML(p,false);}).join("");
+  $("boardPhotos").innerHTML=bp.map(function(p){return photoHTML(p,true);}).join("");
+  $("recapPrintPhotos").innerHTML=pp.length?('<p style="font-size:12px;font-weight:700;color:var(--dim);margin:0">プリント</p>'+pp.map(function(p){return photoHTML(p,false);}).join("")):"";
+  $("recapBoardPhotos").innerHTML=bp.length?('<p style="font-size:12px;font-weight:700;color:var(--dim);margin:0">板書</p>'+bp.map(function(p){return photoHTML(p,true);}).join("")):"";
+  $("photosRecapSection").classList.toggle("hidden",l.photos.length===0);
+}
+function renderQuestions(){
+  var l=current(); if(!l)return;
+  var box=$("questionList"); box.innerHTML="";
+  l.questions.forEach(function(q){
+    var row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:flex-start;gap:8px;background:var(--surface-alt);border-radius:var(--radius);padding:8px 12px";
+    row.innerHTML='<span class="q-badge">'+esc(q.label)+'</span><span style="flex:1;min-width:0;font-size:14px;line-height:1.6">'+esc(q.text)+'</span>';
+    var edit=document.createElement("button"); edit.type="button"; edit.textContent="編集";
+    edit.style.cssText="flex-shrink:0;border:none;background:none;text-decoration:underline;font-size:12px;font-weight:700;color:var(--dim)";
+    edit.setAttribute("aria-label",q.label+"を編集");
+    edit.addEventListener("click",function(){editQuestion(q.id,row);});
+    row.appendChild(edit); box.appendChild(row);
+  });
+}
+function editQuestion(qid,row){
+  var l=current(); var q=null; l.questions.forEach(function(x){if(x.id===qid)q=x;}); if(!q)return;
+  row.innerHTML="";
+  var labelIn=document.createElement("input"); labelIn.className="input"; labelIn.style.width="76px"; labelIn.value=q.label; labelIn.setAttribute("aria-label","問題番号を編集");
+  var textIn=document.createElement("input"); textIn.className="input"; textIn.style.flex="1"; textIn.style.minWidth="120px"; textIn.value=q.text; textIn.setAttribute("aria-label","問題文を編集");
+  var save=document.createElement("button"); save.className="btn-ink"; save.textContent="保存";
+  var del=document.createElement("button"); del.type="button"; del.textContent="消す"; del.style.cssText="border:none;background:none;font-size:12px;font-weight:700;color:var(--accent)";
+  save.addEventListener("click",function(){if(labelIn.value.trim()&&textIn.value.trim()){q.label=labelIn.value.trim();q.text=textIn.value.trim();renderQuestions();}});
+  del.addEventListener("click",function(){l.questions=l.questions.filter(function(x){return x.id!==qid;});renderQuestions();});
+  row.appendChild(labelIn); row.appendChild(textIn); row.appendChild(save); row.appendChild(del);
+}
+$("qAddBtn").addEventListener("click",function(){
+  var l=current(); if(!l)return; var t=$("qTextInput").value.trim(); if(!t)return;
+  var label=$("qLabelInput").value.trim()||("問"+(l.questions.length+1));
+  l.questions.push({id:nextQId++,label:label,text:t,teacherAnswer:null,teacherNote:null,aiAnswer:null,aiExplanation:null});
+  $("qLabelInput").value=""; $("qTextInput").value=""; renderQuestions();
+});
+$("qTextInput").addEventListener("keydown",function(e){if(e.key==="Enter")$("qAddBtn").click();});
+
+function renderTranscript(){
+  var l=current(); if(!l)return;
+  var live=recording? [startSnapshot,localFinals].filter(Boolean).join("\n") : l.transcript;
+  var has=!!(live||interimText);
+  $("transcriptText").innerHTML=esc(live)+(interimText?('<span style="color:var(--dim)">'+(live?"\n":"")+esc(interimText)+'</span>'):"");
+  $("transcriptEmpty").classList.toggle("hidden",has);
+  $("transcriptText").classList.toggle("hidden",!has);
+  $("editTranscriptBtn").classList.toggle("hidden",!(l.transcript&&!recording));
+  $("transcriptRecapSection").classList.toggle("hidden",!l.transcript);
+  $("transcriptRecap").textContent=l.transcript||"";
+  if(recording){var b=$("transcriptBox");b.scrollTop=b.scrollHeight;}
+}
+$("manualAddBtn").addEventListener("click",function(){
+  var l=current(); if(!l)return; var t=$("manualInput").value.trim(); if(!t)return;
+  l.transcript=l.transcript+(l.transcript&&!/\n$/.test(l.transcript)?"\n":"")+t;
+  $("manualInput").value=""; renderTranscript();
+});
+$("manualInput").addEventListener("keydown",function(e){if(e.key==="Enter")$("manualAddBtn").click();});
+$("editTranscriptBtn").addEventListener("click",function(){
+  var l=current(); $("transcriptEdit").value=l.transcript; $("editTranscriptWrap").classList.toggle("hidden");
+});
+$("saveTranscriptBtn").addEventListener("click",function(){
+  var l=current(); l.transcript=$("transcriptEdit").value; $("editTranscriptWrap").classList.add("hidden"); renderTranscript();
+});
+
+function renderAnswers(){
+  var l=current(); if(!l)return;
+  var answered=l.questions.filter(function(q){return q.teacherAnswer;}).length;
+  $("answerCount").textContent=l.questions.length?(" "+answered+" / "+l.questions.length+" 件 先生が言った"):"";
+  var box=$("answerList"); box.innerHTML="";
+  if(l.questions.length===0){
+    box.innerHTML='<p class="card" style="font-size:14px;color:var(--dim);margin:0">この授業にはプリントの問題が登録されていません。</p>'; return;
+  }
+  l.questions.forEach(function(q){
+    var art=document.createElement("article"); art.className="card";
+    var head='<div style="display:flex;align-items:flex-start;gap:8px"><span class="q-badge">'+esc(q.label)+'</span><p style="flex:1;min-width:0;font-size:14px;line-height:1.6;margin:0">'+esc(q.text)+'</p></div>';
+    if(q.teacherAnswer){
+      art.innerHTML=head+'<div style="margin-top:12px;background:var(--accent-soft);border-radius:var(--radius);padding:8px 12px"><p style="font-size:12px;font-weight:900;color:var(--accent);margin:0">先生が言った答え</p><p class="font-display" style="font-size:18px;font-weight:900;color:var(--accent);margin:2px 0 0">'+esc(q.teacherAnswer)+'</p>'+(q.teacherNote?'<p style="font-size:14px;line-height:1.7;margin:4px 0 0">'+esc(q.teacherNote)+'</p>':"")+'</div>';
+    } else if(q.aiAnswer){
+      art.innerHTML=head+'<p style="font-size:14px;color:var(--dim);margin:12px 0 0">授業では言われなかった問題です。</p><div style="margin-top:8px;background:var(--ink-soft);border-radius:var(--radius);padding:8px 12px"><p style="font-size:12px;font-weight:900;color:var(--ink);margin:0">計算による解答（参考）</p><p class="font-display" style="font-size:18px;font-weight:900;color:var(--ink);margin:2px 0 0">'+esc(q.aiAnswer)+'</p>'+(q.aiExplanation?'<p style="white-space:pre-wrap;font-size:14px;line-height:1.7;margin:4px 0 0">'+esc(q.aiExplanation)+'</p>':"")+'</div>';
+    } else {
+      art.innerHTML=head+'<p style="font-size:14px;color:var(--dim);margin:12px 0 0">授業では言われなかった問題です。</p>';
+      var btn=document.createElement("button"); btn.type="button"; btn.textContent="計算で解いてみる（参考）";
+      btn.style.cssText="margin-top:8px;border:2px solid var(--ink);background:none;border-radius:999px;padding:6px 16px;font-size:14px;font-weight:700;color:var(--ink)";
+      btn.addEventListener("click",function(){
+        var res=solveQuestion(q.text);
+        q.aiAnswer=res.answer; q.aiExplanation=res.explanation; renderAnswers();
+      });
+      art.appendChild(btn);
+    }
+    box.appendChild(art);
+  });
+}
+function renderSummary(){
+  var l=current(); if(!l)return;
+  var has=!!l.summary3;
+  $("summarySection").classList.toggle("hidden",!has);
+  if(!has)return;
+  $("summary3List").innerHTML=l.summary3.map(function(line,i){
+    return '<li style="display:flex;gap:12px"><span class="font-display" style="flex-shrink:0;font-size:18px;font-weight:900;color:var(--accent)">'+(i+1)+'</span><span style="font-size:16px;font-weight:700;line-height:1.7">'+esc(line)+'</span></li>';
+  }).join("");
+  $("detailSummary").textContent=l.detailSummary||"";
+  var kt=l.keyTerms||[];
+  $("keyTermsCard").classList.toggle("hidden",kt.length===0);
+  $("keyTermsList").innerHTML=kt.map(function(t){
+    return '<div style="display:flex;gap:8px;font-size:14px"><dt style="flex-shrink:0;font-weight:700;color:var(--ink)">'+esc(t.term)+'</dt><dd style="margin:0">'+esc(t.meaning)+'</dd></div>';
+  }).join("");
+  var tp=l.testPoints||[];
+  $("testPointsCard").classList.toggle("hidden",tp.length===0);
+  $("testPointsList").innerHTML=tp.map(function(p){return '<li>★ '+esc(p)+'</li>';}).join("");
+}
+function renderQA(){
+  var l=current(); if(!l)return;
+  var box=$("qaList"); box.innerHTML="";
+  if(l.qa.length===0){box.innerHTML='<p style="font-size:14px;color:var(--dim);margin:0">この授業の内容なら何でも聞けます。文字起こしと板書の読み取り結果の中から、関連する部分を探して答えます。</p>';return;}
+  l.qa.forEach(function(m){
+    var d=document.createElement("div"); d.className=m.role==="user"?"qa-user":"qa-ai";
+    d.innerHTML='<p style="font-size:12px;font-weight:700;color:var(--dim);margin:0">'+(m.role==="user"?"あなた":"アシスタント")+'</p><p style="white-space:pre-wrap;font-size:14px;line-height:1.7;margin:2px 0 0">'+esc(m.text)+'</p>';
+    box.appendChild(d);
+  });
+}
+function renderLesson(){
+  var l=current(); if(!l)return;
+  $("lessonTitle").textContent=l.subject;
+  $("lessonDateLabel").textContent=fmtDateLong(l.lessonDate);
+  var st=$("lessonStatus");
+  if(l.status==="finished"){st.textContent="まとめ済み";st.className="badge badge-ink";}
+  else{st.textContent="授業中";st.className="badge badge-accent";}
+  $("activeFlow").classList.toggle("hidden",l.status==="finished");
+  $("finishedFlow").classList.toggle("hidden",l.status!=="finished");
+  renderPhotos(); renderQuestions(); renderTranscript(); renderAnswers(); renderSummary(); renderQA();
+  $("recHint").textContent=speechSupported()
+    ? "先生の声がそのまま文字になります。答え合わせの声も拾います。音声認識はChrome / Safariなどの対応ブラウザで動きます。"
+    : "このブラウザは音声認識に未対応です。Chromeで開くか、下の手入力を使ってください。";
+}
+
+/* ---------------- photos + OCR (browser Tesseract.js) ---------------- */
+function extractQuestionsFromText(text){
+  var lines=text.split(/\n+/).map(function(s){return s.trim();}).filter(Boolean);
+  var out=[]; var cur=null;
+  var labelRe=/^(問\s*\d+|大問\s*\d+|第\s*\d+\s*問|\(\s*\d+\s*\)|（\s*\d+\s*）|\d+\s*[.．、)）])/;
+  lines.forEach(function(line){
+    var m=line.match(labelRe);
+    if(m){ if(cur)out.push(cur); cur={label:m[1].replace(/\s+/g,""),text:line}; }
+    else if(cur){ cur.text+=" "+line; }
+    else { cur={label:"問"+(out.length+1),text:line}; }
+  });
+  if(cur)out.push(cur);
+  // Drop lines that look like pure headers (very short, no question-ish content) only if we have many
+  return out.filter(function(q){return q.text.replace(q.label,"").trim().length>=2;}).slice(0,40);
+}
+var ocrBusy=false;
+function handlePhoto(file,kind){
+  var l=current(); if(!file||!l||ocrBusy)return;
+  var url=URL.createObjectURL(file);
+  var photo={id:nextPhotoId++,kind:kind,url:url,extractedText:null,note:null};
+  l.photos.push(photo); renderPhotos();
+  if(!window.Tesseract){showNotice("文字の読み取りライブラリを読み込めませんでした。写真は追加したので、問題は手入力で登録してください。");return;}
+  ocrBusy=true;
+  var wrap=$("ocrProgressWrap"),bar=$("ocrProgressBar"),label=$("ocrProgressLabel");
+  wrap.classList.remove("hidden"); bar.style.width="0%";
+  label.textContent=(kind==="print"?"プリント":"板書")+"を読み取り中…（数十秒かかることがあります）";
+  $("printBtn").disabled=true; $("boardBtn").disabled=true;
+  window.Tesseract.recognize(file,"jpn",{logger:function(m){
+    if(m.status==="recognizing text"){bar.style.width=Math.round((m.progress||0)*100)+"%";}
+  }}).then(function(res){
+    var text=(res.data&&res.data.text||"").trim();
+    photo.extractedText=text||null;
+    if(kind==="print"){
+      var qs=extractQuestionsFromText(text);
+      if(qs.length){
+        qs.forEach(function(q){l.questions.push({id:nextQId++,label:q.label,text:q.text,teacherAnswer:null,teacherNote:null,aiAnswer:null,aiExplanation:null});});
+        showNotice("プリントから問題を"+qs.length+"件読み取りました。間違いは「編集」で直せます。");
+      } else {
+        showNotice("問題を読み取れませんでした。写真は保存したので、明るい場所で撮り直すか、問題を手入力で追加してください。");
+      }
+    } else {
+      photo.note=text?"板書の読み取り結果":"";
+      showNotice(text?"板書の写真を追加し、内容を読み取りました。":"板書の文字を読み取れませんでした。写真は追加しました。");
+    }
+    renderPhotos(); renderQuestions();
+  }).catch(function(){
+    showNotice("写真の読み取りに失敗しました。写真は保存したので、問題は手入力で追加してください。");
+  }).finally(function(){
+    ocrBusy=false; wrap.classList.add("hidden"); $("printBtn").disabled=false; $("boardBtn").disabled=false;
+  });
+}
+$("printBtn").addEventListener("click",function(){$("printInput").click();});
+$("boardBtn").addEventListener("click",function(){$("boardInput").click();});
+$("printInput").addEventListener("change",function(e){handlePhoto(e.target.files&&e.target.files[0],"print");e.target.value="";});
+$("boardInput").addEventListener("change",function(e){handlePhoto(e.target.files&&e.target.files[0],"board");e.target.value="";});
+
+/* ---------------- speech recognition (Web Speech API) ---------------- */
+function getCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null;}
+function speechSupported(){return !!getCtor();}
+var recording=false, elapsed=0, interimText="", localFinals="", startSnapshot="";
+var recObj=null, recStopped=true, restartTimer=null, elapsedTimer=null;
+
+function formatElapsed(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
+function updateRecUI(){
+  var btn=$("recBtn"),label=$("recLabel");
+  if(recording){btn.style.background="var(--text)";btn.textContent="■";btn.setAttribute("aria-label","録音を止める");
+    label.innerHTML='<span class="rec-dot"></span> 録音中 '+esc(formatElapsed(elapsed));}
+  else{btn.style.background="var(--accent)";btn.textContent="●";btn.setAttribute("aria-label","録音をはじめる");label.textContent="録音をはじめる";}
+}
+function launchRec(){
+  var Ctor=getCtor(); if(!Ctor)return;
+  var rec=new Ctor(); recObj=rec;
+  rec.lang="ja-JP"; rec.continuous=true; rec.interimResults=true;
+  rec.onresult=function(ev){
+    var interim="";
+    for(var i=ev.resultIndex;i<ev.results.length;i++){
+      var r=ev.results[i]; if(!r)continue;
+      var t=(r[0].transcript||"").trim(); if(!t)continue;
+      if(r.isFinal){localFinals=localFinals+(localFinals?"\n":"")+t; interimText="";}
+      else interim+=t;
+    }
+    if(interim)interimText=interim;
+    renderTranscript();
+  };
+  rec.onerror=function(ev){
+    if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){
+      recStopped=true; recording=false; clearInterval(elapsedTimer); updateRecUI();
+      var e=$("recError"); e.textContent="マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。"; e.classList.remove("hidden");
+    } else if(ev.error==="network"){
+      var e2=$("recError"); e2.textContent="音声認識の通信に失敗しました。ネット接続を確認してください（録音は続けられます）。"; e2.classList.remove("hidden");
+    }
+  };
+  rec.onend=function(){
+    if(!recStopped){restartTimer=setTimeout(function(){if(!recStopped){try{launchRec();}catch(_){}}},350);}
+  };
+  try{rec.start();}catch(_){}
+}
+function startRecording(){
+  var l=current(); if(!l)return;
+  var err=$("recError"); err.classList.add("hidden");
+  if(!speechSupported()){err.textContent="このブラウザは音声認識に対応していません。Chromeで開くか、手入力欄から文字起こしを貼ってください。";err.classList.remove("hidden");return;}
+  startSnapshot=l.transcript||""; localFinals=""; interimText=""; elapsed=0;
+  recStopped=false; recording=true; updateRecUI(); renderTranscript();
+  elapsedTimer=setInterval(function(){elapsed++;updateRecUI();},1000);
+  launchRec();
+}
+function stopRecording(silent){
+  if(recObj||recording){
+    recStopped=true; if(restartTimer)clearTimeout(restartTimer);
+    try{recObj&&recObj.stop();}catch(_){}
+    recObj=null;
+  }
+  if(elapsedTimer)clearInterval(elapsedTimer);
+  var wasRecording=recording; recording=false; interimText="";
+  if(wasRecording&&!silent){
+    var l=current();
+    if(l&&localFinals){l.transcript=[startSnapshot,localFinals].filter(Boolean).join("\n");}
+  } else if(wasRecording&&silent){
+    var l2=current();
+    if(l2&&localFinals){l2.transcript=[startSnapshot,localFinals].filter(Boolean).join("\n");}
+    localFinals="";
+  }
+  if(current()){updateRecUI();renderTranscript();}
+}
+$("recBtn").addEventListener("click",function(){recording?stopRecording(false):startRecording();});
+
+/* ---------------- finish: summary + answer matching (client-side) ---------------- */
+function splitSentences(text){
+  return text.replace(/\s*\n\s*/g,"。").split(/。/).map(function(s){return s.trim();}).filter(function(s){return s.length>=4;});
+}
+function matchTeacherAnswers(l){
+  var t=l.transcript||"";
+  l.questions.forEach(function(q){
+    q.teacherAnswer=null; q.teacherNote=null;
+    var label=q.label.replace(/\s+/g,"");
+    var variants=[label,label.replace("問","問い"),q.label];
+    var found=null;
+    for(var v=0;v<variants.length&&!found;v++){
+      var needle=variants[v]; if(!needle)continue;
+      var idx=t.indexOf(needle);
+      while(idx!==-1&&!found){
+        var after=t.slice(idx+needle.length, idx+needle.length+80);
+        var m=after.match(/^\s*(?:番)?\s*(?:の答えは|の答え|答えは|は|：|:|、|。)?\s*([^\n。]{1,30})/);
+        if(m&&m[1]&&m[1].trim().length>=1&&!/^(次|それでは|では|まず)/.test(m[1].trim())){
+          var ans=m[1].trim().replace(/[、,]\s*.*$/,"").trim();
+          if(ans){found={answer:ans,note:t.slice(Math.max(0,idx-0),Math.min(t.length,idx+needle.length+80)).split(/[。\n]/).filter(Boolean)[0]||""};}
+        }
+        idx=t.indexOf(needle,idx+needle.length);
+      }
+    }
+    if(found){q.teacherAnswer=found.answer; q.teacherNote=found.note&&found.note.trim()!==found.answer?found.note.trim():null;}
+  });
+}
+function buildSummary(l){
+  var boardTexts=l.photos.filter(function(p){return p.kind==="board"&&p.extractedText;}).map(function(p){return p.extractedText;});
+  var allText=[l.transcript].concat(boardTexts).join("\n");
+  var sents=splitSentences(allText);
+  // summary3: prefer sentences with emphasis keywords, else first sentences
+  var kw=/大事|重要|ポイント|定義|公式|つまり|覚え|テスト|注意|例えば/;
+  var scored=sents.map(function(s,i){return {s:s,i:i,score:(kw.test(s)?2:0)+Math.min(1,s.length/60)};});
+  var picked=scored.slice().sort(function(a,b){return b.score-a.score;}).slice(0,3).sort(function(a,b){return a.i-b.i;}).map(function(x){return x.s.length>90?x.s.slice(0,90)+"…":x.s;});
+  while(picked.length<3&&sents[picked.length]){var cand=sents[picked.length]; if(picked.indexOf(cand)===-1)picked.push(cand.length>90?cand.slice(0,90)+"…":cand); else break;}
+  if(picked.length===0)picked=["（文字起こしがなかったため、まとめを作れませんでした。録音するか、手入力で内容を追加してからもう一度「授業をおわる」を押してください。）"];
+  var detail=sents.slice(0,14).join("。")+(sents.length?"。":"");
+  if(detail.length>700)detail=detail.slice(0,700)+"…";
+  if(!detail)detail="文字起こしがありませんでした。";
+  // key terms: 「X」 and "Xとは"
+  var terms=[]; var seen={};
+  function addTerm(term,meaning){term=(term||"").trim(); if(term.length<2||term.length>20||seen[term])return; seen[term]=1; terms.push({term:term,meaning:meaning||""});}
+  var m1=allText.match(/「([^」]{2,20})」/g)||[];
+  m1.forEach(function(g){var term=g.slice(1,-1); var sent=sents.filter(function(s){return s.indexOf(term)!==-1;})[0]||""; addTerm(term,sent.slice(0,80));});
+  var re=/([一-龠ァ-ヶーA-Za-z0-9]{2,16})とは/g; var mm;
+  while((mm=re.exec(allText))!==null&&terms.length<10){var s2=sents.filter(function(s){return s.indexOf(mm[1]+"とは")!==-1;})[0]||""; addTerm(mm[1],s2.slice(0,90));}
+  var testSents=sents.filter(function(s){return /テスト|試験|出る|出題|重要|大事|必ず|覚え/.test(s);}).slice(0,6)
+    .map(function(s){return s.length>90?s.slice(0,90)+"…":s;});
+  return {summary3:picked.slice(0,3),detailSummary:detail,keyTerms:terms.slice(0,8),testPoints:testSents};
+}
+$("finishBtn").addEventListener("click",function(){
+  var l=current(); if(!l)return;
+  if(recording)stopRecording(false);
+  matchTeacherAnswers(l);
+  var s=buildSummary(l);
+  l.summary3=s.summary3; l.detailSummary=s.detailSummary; l.keyTerms=s.keyTerms; l.testPoints=s.testPoints;
+  l.status="finished"; renderLesson(); window.scrollTo(0,0);
+});
+$("reopenBtn").addEventListener("click",function(){var l=current(); if(!l)return; l.status="active"; renderLesson();});
+
+/* ---------------- simple solver (arithmetic + linear equations, no eval) ---------------- */
+function tokenizeExpr(expr){
+  var tokens=[]; var i=0;
+  while(i<expr.length){
+    var c=expr[i];
+    if(/\s/.test(c)){i++;continue;}
+    if(/[0-9.]/.test(c)){var num=""; while(i<expr.length&&/[0-9.]/.test(expr[i]))num+=expr[i++]; tokens.push({t:"n",v:parseFloat(num)}); continue;}
+    if("+-*/()".indexOf(c)!==-1){tokens.push({t:c}); i++; continue;}
+    return null;
+  }
+  return tokens;
+}
+function evalTokens(tokens){
+  var pos=0;
+  function peek(){return tokens[pos];}
+  function parseExpr(){var v=parseTerm(); while(peek()&&(peek().t==="+"||peek().t==="-")){var op=tokens[pos++].t; var r=parseTerm(); v=op==="+"?v+r:v-r;} return v;}
+  function parseTerm(){var v=parseFactor(); while(peek()&&(peek().t==="*"||peek().t==="/")){var op=tokens[pos++].t; var r=parseFactor(); v=op==="*"?v*r:v/r;} return v;}
+  function parseFactor(){var tk=peek(); if(!tk)throw new Error("bad"); if(tk.t==="-"){pos++;return -parseFactor();} if(tk.t==="+"){pos++;return parseFactor();} if(tk.t==="("){pos++;var v=parseExpr(); if(!peek()||peek().t!==")")throw new Error("paren"); pos++; return v;} if(tk.t==="n"){pos++;return tk.v;} throw new Error("token");}
+  var v=parseExpr(); if(pos!==tokens.length)throw new Error("rest"); return v;
+}
+function fmtNum(n){if(!isFinite(n))return String(n); return Math.round(n*10000)/10000+"";}
+function solveQuestion(text){
+  var norm=text.replace(/×/g,"*").replace(/÷/g,"/").replace(/−/g,"-").replace(/－/g,"-").replace(/＋/g,"+").replace(/＝/g,"=");
+  // linear equation in x
+  var eq=norm.match(/([^=]+)=([^=]+)/);
+  if(eq&&/x/i.test(eq[0])){
+    var side=eq[1].replace(/\s+/g,""), rhs=parseFloat((eq[2].match(/-?\d+(?:\.\d+)?/)||[])[0]);
+    if(!isNaN(rhs)){
+      var m;
+      if((m=side.match(/^x([+-])(\d+(?:\.\d+)?)$/))){var val=m[1]==="+"?rhs-parseFloat(m[2]):rhs+parseFloat(m[2]); return {answer:"x = "+fmtNum(val),explanation:"両辺を整理すると x = "+fmtNum(val)+" になります。移項して計算しました。"};}
+      if((m=side.match(/^(\d+(?:\.\d+)?)([+-])x$/))){var v2=m[2]==="+"?rhs-parseFloat(m[1]):parseFloat(m[1])-rhs; return {answer:"x = "+fmtNum(v2),explanation:"移項して計算すると x = "+fmtNum(v2)+" になります。"};}
+      if((m=side.match(/^(\d+(?:\.\d+)?)x$/))){return {answer:"x = "+fmtNum(rhs/parseFloat(m[1])),explanation:"両辺を "+m[1]+" で割ると x = "+fmtNum(rhs/parseFloat(m[1]))+" になります。"};}
+      if((m=side.match(/^x\/(\d+(?:\.\d+)?)$/))){return {answer:"x = "+fmtNum(rhs*parseFloat(m[1])),explanation:"両辺に "+m[1]+" をかけると x = "+fmtNum(rhs*parseFloat(m[1]))+" になります。"};}
+    }
+    return {answer:"このWeb版では解けませんでした",explanation:"この問題は自動計算の対象外です（対応：四則計算と基本的な一次方程式）。授業のまとめや質問欄で確認してください。"};
+  }
+  // arithmetic: longest expression-like substring
+  var cleaned=norm.replace(/[^0-9+\-*/(). ]/g," ").trim();
+  var parts=cleaned.split(/\s{2,}/).map(function(s){return s.trim();}).filter(function(s){return /\d/.test(s)&&/[+\-*/]/.test(s);});
+  for(var i=0;i<parts.length;i++){
+    try{var tk=tokenizeExpr(parts[i]); if(tk&&tk.length>=3){var v=evalTokens(tk); return {answer:fmtNum(v),explanation:"計算式「"+parts[i].trim()+"」を、かけ算・わり算を先に計算する順序で解きました。"};}}catch(_){}
+  }
+  return {answer:"このWeb版では解けませんでした",explanation:"この問題は自動計算の対象外です（対応：四則計算と基本的な一次方程式）。授業のまとめや質問欄で確認してください。"};
+}
+
+/* ---------------- Q&A: search the lesson record ---------------- */
+function answerQuestion(l,question){
+  var boardTexts=l.photos.filter(function(p){return p.kind==="board"&&p.extractedText;}).map(function(p){return p.extractedText;});
+  var sents=splitSentences([l.transcript].concat(boardTexts).join("\n"));
+  var keys=question.replace(/[？?。、！!]/g," ").split(/\s+/).filter(function(w){return w.length>=2;});
+  // also pull quoted / content words
+  var q2=question.replace(/って何|とは|を教えて|について|だっけ/g," ").trim();
+  if(q2.length>=2&&keys.indexOf(q2)===-1)keys.push(q2);
+  var hits=sents.map(function(s){var sc=0; keys.forEach(function(k){if(s.indexOf(k)!==-1)sc++;}); return {s:s,sc:sc};})
+    .filter(function(h){return h.sc>0;}).sort(function(a,b){return b.sc-a.sc;}).slice(0,3);
+  // also check question/answer pairs
+  var qaHits=l.questions.filter(function(q){return keys.some(function(k){return q.text.indexOf(k)!==-1||q.label===k;})&&q.teacherAnswer;});
+  var out=[];
+  if(qaHits.length)out.push("プリントの答え合わせでは："+qaHits.map(function(q){return q.label+" の答えは「"+q.teacherAnswer+"」";}).join("、"));
+  if(hits.length)out.push("授業の記録では、こう言われていました：\n"+hits.map(function(h){return "・"+h.s;}).join("\n"));
+  if(!out.length)return "この授業の記録（文字起こし・板書）の中には、その内容は見つかりませんでした。キーワードを変えて聞くか、文字起こしを確認してみてください。";
+  return out.join("\n\n");
+}
+function askQA(){
+  var l=current(); if(!l)return; var q=$("qaInput").value.trim(); if(!q)return;
+  l.qa.push({id:nextQaId++,role:"user",text:q});
+  l.qa.push({id:nextQaId++,role:"assistant",text:answerQuestion(l,q)});
+  $("qaInput").value=""; renderQA();
+}
+$("qaBtn").addEventListener("click",askQA);
+$("qaInput").addEventListener("keydown",function(e){if(e.key==="Enter")askQA();});
+
+/* ---------------- download + delete ---------------- */
+$("downloadBtn").addEventListener("click",function(){
+  var l=current(); if(!l)return;
+  var lines=[];
+  lines.push(l.subject+"（"+fmtDateLong(l.lessonDate)+"）");
+  lines.push("");
+  if(l.summary3){lines.push("■ 3行要約"); l.summary3.forEach(function(s,i){lines.push((i+1)+". "+s);}); lines.push("");}
+  if(l.detailSummary){lines.push("■ 詳しいまとめ"); lines.push(l.detailSummary); lines.push("");}
+  if(l.keyTerms&&l.keyTerms.length){lines.push("■ 大事な用語"); l.keyTerms.forEach(function(t){lines.push("・"+t.term+"："+t.meaning);}); lines.push("");}
+  if(l.testPoints&&l.testPoints.length){lines.push("■ テストに出そうなところ"); l.testPoints.forEach(function(p){lines.push("★ "+p);}); lines.push("");}
+  lines.push("■ プリントの答え");
+  if(l.questions.length===0)lines.push("（問題なし）");
+  l.questions.forEach(function(q){
+    lines.push(q.label+"："+q.text);
+    lines.push("　答え（先生）："+(q.teacherAnswer||"授業では言われなかった"));
+    if(q.teacherNote)lines.push("　メモ："+q.teacherNote);
+    if(q.aiAnswer)lines.push("　計算による解答（参考）："+q.aiAnswer);
+  });
+  lines.push(""); lines.push("■ 文字起こし"); lines.push(l.transcript||"（なし）");
+  var blob=new Blob([lines.join("\n")],{type:"text/plain;charset=utf-8"});
+  var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=l.lessonDate+"_"+l.subject+".txt"; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
+});
+$("deleteBtn").addEventListener("click",function(){$("deleteBtn").classList.add("hidden");$("deleteConfirm").classList.remove("hidden");$("deleteConfirm").style.display="flex";});
+$("deleteNo").addEventListener("click",function(){$("deleteConfirm").classList.add("hidden");$("deleteConfirm").style.display="";$("deleteBtn").classList.remove("hidden");});
+$("deleteYes").addEventListener("click",function(){
+  stopRecording(true);
+  lessons=lessons.filter(function(x){return x.id!==currentId;});
+  currentId=null; $("lessonView").classList.add("hidden"); $("homeView").classList.remove("hidden");
+  $("deleteConfirm").classList.add("hidden"); $("deleteBtn").classList.remove("hidden");
+  renderLessonList();
+});
+
+updateRecUI();
+})();
+</script>
+</body>
+</html>
