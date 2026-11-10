@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
 <style>
   :root{
     color-scheme: light dark;
@@ -59,6 +58,15 @@
   .web-note{font-size:12px;color:var(--dim);line-height:1.7}
   img.photo{width:100%;border-radius:var(--radius);border:1px solid var(--border);object-fit:cover;max-height:420px;background:var(--surface-alt)}
   .icon{width:18px;height:18px;vertical-align:-3px}
+  .ocr-panel{margin-top:8px;background:var(--surface-alt);border-radius:var(--radius);padding:10px 12px}
+  .ocr-panel textarea{width:100%;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.7;margin-top:8px}
+  .ocr-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .btn-small{border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text);padding:6px 12px;font-size:12px;font-weight:700}
+  .btn-small-accent{border:none;border-radius:999px;background:var(--ink);color:var(--bg);padding:6px 12px;font-size:12px;font-weight:700}
+  .quality-good{color:var(--green)} .quality-mid{color:#b07908} .quality-bad{color:var(--accent)}
+  @media (prefers-color-scheme: dark){.quality-mid{color:#e0a83e}}
+  details.tips summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--dim)}
+  details.tips ul{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.8;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -70,12 +78,34 @@
       <p style="margin:0"><span class="badge badge-accent">Web版 ・ ブラウザだけで動く</span></p>
       <h1 class="font-display" style="font-size:26px;font-weight:900;line-height:1.4;margin:12px 0 0">聞いてなくても、<br>最後に全部わかる。</h1>
       <ol style="list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:6px;font-size:14px">
-        <li><span class="font-display" style="font-weight:900;color:var(--accent);margin-right:4px">1</span>最初にプリントを撮る（文字を読み取ります）</li>
+        <li><span class="font-display" style="font-weight:900;color:var(--accent);margin-right:4px">1</span>最初にプリントを撮る（AIが問題を読み取ります）</li>
         <li><span class="font-display" style="font-weight:900;color:var(--accent);margin-right:4px">2</span>授業中は録音ボタンを押しておくだけ（音声認識で文字起こし）</li>
         <li><span class="font-display" style="font-weight:900;color:var(--accent);margin-right:4px">3</span>終わったら、先生が言った答えとまとめが全部出る</li>
       </ol>
-      <p class="web-note" style="margin-top:12px">このWeb版はデータ保存用のサーバーを使わず、このタブの中だけで処理します。写真の読み取り（OCR）と文字起こしはブラウザの機能で行い、まとめと答え合わせは文字起こしの内容から自動で組み立てます。タブを閉じると記録は消えるので、終わったら下の「テキストで保存」で残してください。</p>
+      <p class="web-note" style="margin-top:12px">写真の読み取り・答え合わせ・まとめは Google の AI「Gemini」に任せます。傾いた写真・影・小さな文字・手書き混じりのプリントでも、写真を見て理解して問題ごとに分けてくれます。下で API キーを設定してから使ってください。タブを閉じると記録とキーは消えるので、終わったら「テキストで保存」で残してください。</p>
     </div>
+
+    <section class="card" id="aiSettingsCard" style="margin-top:20px;border:2px solid var(--ink)">
+      <div style="display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <h2 class="font-display" style="font-size:16px;font-weight:900;margin:0;flex:1;min-width:160px">AI読み取りの設定（Gemini）</h2>
+        <span id="aiKeyStatus" class="badge badge-accent">未設定</span>
+      </div>
+      <p style="font-size:13px;line-height:1.8;color:var(--dim);margin:8px 0 0">写真読み取りの精度を上げるための設定です。キーがないと写真のAI読み取り・AIでの答え合わせは動きません（録音・手入力・これまでの組み立てはそのまま使えます）。</p>
+      <ol style="font-size:13px;line-height:1.9;margin:8px 0 0;padding-left:20px">
+        <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--ink);font-weight:700;text-decoration:underline">Google AI Studio</a> を開いて Googleアカウントで入る</li>
+        <li>「APIキーを作成」を押してキーを作り、コピーする（無料・カード登録なし）</li>
+        <li>下の欄に貼って「設定する」を押す</li>
+      </ol>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <label for="geminiKeyInput" class="hidden">Gemini APIキー</label>
+        <input id="geminiKeyInput" class="input" style="flex:1;min-width:200px" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza… で始まるキーを貼る">
+        <button id="geminiKeySave" type="button" class="btn-ink">設定する</button>
+        <button id="geminiKeyClear" type="button" class="btn-ghost hidden">消す</button>
+      </div>
+      <p id="geminiKeyMsg" class="hidden" role="status" style="font-size:13px;line-height:1.7;margin:8px 0 0"></p>
+      <p style="font-size:12px;color:var(--dim);line-height:1.7;margin:8px 0 0">キーはこのタブの中だけに持ち、写真と文字起こしを Google の Gemini API に送るときだけ使います。このページの作者や他のサーバーには送りません。タブを閉じたら消えます。</p>
+      <button id="geminiTestBtn" type="button" class="btn-small hidden" style="margin-top:8px">接続テストする</button>
+    </section>
 
     <section class="card" style="margin-top:20px">
       <h2 class="font-display" style="font-size:16px;font-weight:900;margin:0">新しい授業をはじめる</h2>
@@ -123,9 +153,18 @@
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             プリントの写真を送る
           </button>
-          <p style="font-size:12px;color:var(--dim);margin:8px 0 0;line-height:1.7">写真から文字を読み取り（OCR）、問題を自動で登録します。読み取りは端末・ブラウザによって数十秒かかることがあります。うまく読めなかった問題は下の手入力で追加・編集できます。</p>
+          <p style="font-size:12px;color:var(--dim);margin:8px 0 0;line-height:1.7">写真を AI（Gemini）が見て、書いてある内容と問題の区切りをまとめて読み取ります。傾き・影・手書きが混じっていても、従来の文字読み取りより読みやすくなっています。10〜30秒ほどかかることがあります。APIキーが未設定のときは、ホームに戻って設定してください。</p>
+          <details class="tips" style="margin-top:8px">
+            <summary>うまく読むコツ（撮り方）</summary>
+            <ul>
+              <li>プリント全体が入るように撮る（端が切れるとその問題は読めません）</li>
+              <li>ピントを合わせて、文字がぼやけないようにする</li>
+              <li>文字がとても小さいプリントは、半分ずつ2枚に分けるとさらに正確になります</li>
+              <li>読み取り結果は写真の下で直せます。直したら「問題を作り直す」で反映できます</li>
+            </ul>
+          </details>
           <div id="ocrProgressWrap" class="hidden" style="margin-top:12px">
-            <p id="ocrProgressLabel" style="font-size:13px;margin:0 0 6px">読み取り中…</p>
+            <p id="ocrProgressLabel" style="font-size:13px;margin:0 0 6px">AIが読み取り中…</p>
             <div class="progress"><div id="ocrProgressBar" style="width:0%"></div></div>
           </div>
           <div id="printPhotos" style="margin-top:12px;display:flex;flex-direction:column;gap:12px"></div>
@@ -175,7 +214,7 @@
       <section style="margin-top:32px">
         <h2 class="font-display" style="font-size:16px;font-weight:700;margin:0"><span class="step-num">3</span>授業が終わったら</h2>
         <button id="finishBtn" class="btn-primary font-display" style="margin-top:12px">授業をおわる → 答えとまとめを見る</button>
-        <p style="text-align:center;font-size:12px;color:var(--dim);margin:8px 0 0;line-height:1.7">文字起こしの中から先生が言った答えを問題ごとに探し、要約・重要用語・テストに出そうなところを組み立てます。</p>
+        <p style="text-align:center;font-size:12px;color:var(--dim);margin:8px 0 0;line-height:1.7">APIキーがあるときは AI が文字起こし全体を読んで、先生が言った答えを問題ごとに照合し、要約・重要用語・テストに出そうなところを作ります。キーがないときは端末内の簡易照合で組み立てます。</p>
       </section>
     </div>
 
@@ -231,7 +270,7 @@
       <h2 class="font-display" style="font-size:18px;font-weight:900;margin:0">分からなかったところを聞く</h2>
       <div class="card" style="margin-top:12px">
         <div id="qaList" style="display:flex;flex-direction:column;gap:12px">
-          <p id="qaEmpty" style="font-size:14px;color:var(--dim);margin:0">この授業の内容なら何でも聞けます。文字起こしと板書の読み取り結果の中から、関連する部分を探して答えます。</p>
+          <p id="qaEmpty" style="font-size:14px;color:var(--dim);margin:0">この授業の内容なら何でも聞けます。APIキーがあるときは AI が文字起こしと板書を読んで答えます。ないときは記録の中から関連する文を探して答えます。</p>
         </div>
         <div style="margin-top:12px;display:flex;gap:8px">
           <input id="qaInput" class="input" style="flex:1;min-width:0" type="text" placeholder="例：判別式って何だっけ？" aria-label="授業内容への質問">
@@ -260,6 +299,9 @@ var SUBJECTS=["数学","英語","国語","理科","社会","現代社会","経�
 /* ---------------- state (in-memory only, this tab) ---------------- */
 var lessons=[]; var nextLessonId=1; var nextQId=1; var nextPhotoId=1; var nextQaId=1;
 var currentId=null; var selectedSubject=SUBJECTS[0];
+/* Gemini API key: in-memory only for this tab, never stored or sent anywhere except Google */
+var geminiApiKey="";
+var GEMINI_MODELS=["gemini-2.5-flash","gemini-2.0-flash","gemini-2.5-flash-lite"];
 
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
@@ -269,6 +311,98 @@ function fmtDateLong(ymd){var d=new Date(ymd+"T00:00:00");if(isNaN(d.getTime()))
 function current(){for(var i=0;i<lessons.length;i++)if(lessons[i].id===currentId)return lessons[i];return null;}
 function showNotice(msg){$("noticeText").textContent=msg;$("noticeBox").classList.remove("hidden");}
 $("noticeClose").addEventListener("click",function(){$("noticeBox").classList.add("hidden");});
+
+/* ---------------- Gemini API ---------------- */
+function renderAiKeyStatus(){
+  var st=$("aiKeyStatus"), msg=$("geminiKeyMsg");
+  if(geminiApiKey){
+    st.textContent="設定済み"; st.className="badge badge-green";
+    $("geminiKeyClear").classList.remove("hidden");
+    $("geminiTestBtn").classList.remove("hidden");
+    $("geminiKeyInput").value="";
+    $("geminiKeyInput").placeholder="設定済み（変えるときだけ貼り直す）";
+  } else {
+    st.textContent="未設定"; st.className="badge badge-accent";
+    $("geminiKeyClear").classList.add("hidden");
+    $("geminiTestBtn").classList.add("hidden");
+    $("geminiKeyInput").placeholder="AIza… で始まるキーを貼る";
+    if(msg)msg.classList.add("hidden");
+  }
+}
+$("geminiKeySave").addEventListener("click",function(){
+  var v=$("geminiKeyInput").value.trim();
+  var msg=$("geminiKeyMsg");
+  if(!v){msg.textContent="キーが貼られていません。AI Studioで作ったキーを貼ってください。";msg.style.color="var(--accent)";msg.classList.remove("hidden");return;}
+  if(v.length<20||/\s/.test(v)){msg.textContent="キーの形がおかしいようです。余分な文字や空白が入っていないか確認してください。";msg.style.color="var(--accent)";msg.classList.remove("hidden");return;}
+  geminiApiKey=v;
+  msg.textContent="設定しました。下の「接続テストする」で正しいキーか確認できます。そのまま授業をはじめても大丈夫です。";msg.style.color="var(--green)";msg.classList.remove("hidden");
+  renderAiKeyStatus();
+});
+$("geminiKeyClear").addEventListener("click",function(){
+  geminiApiKey=""; renderAiKeyStatus();
+  var msg=$("geminiKeyMsg"); msg.textContent="キーを消しました。"; msg.style.color="var(--dim)"; msg.classList.remove("hidden");
+});
+$("geminiTestBtn").addEventListener("click",function(){
+  var btn=$("geminiTestBtn"), msg=$("geminiKeyMsg");
+  btn.disabled=true; btn.textContent="テスト中…";
+  callGeminiText("「OK」とだけ返してください。").then(function(t){
+    msg.textContent="接続できました（AIの返事："+String(t||"").slice(0,40)+"）。写真読み取りが使えます。"; msg.style.color="var(--green)"; msg.classList.remove("hidden");
+  }).catch(function(e){
+    msg.textContent="接続できませんでした："+geminiErrorText(e)+" キーが正しいか、AI Studioで有効になっているか確認してください。"; msg.style.color="var(--accent)"; msg.classList.remove("hidden");
+  }).finally(function(){btn.disabled=false; btn.textContent="接続テストする";});
+});
+function geminiErrorText(e){
+  var m=(e&&e.message)||String(e||"不明なエラー");
+  if(/400/.test(m))return "リクエストが不正でした（キーまたは形式）。";
+  if(/401|403|API key|PERMISSION/.test(m))return "キーが無効か、権限がありません。";
+  if(/429|quota|RESOURCE_EXHAUSTED/i.test(m))return "無料枠の上限に達しました。少し待ってから試してください。";
+  if(/Failed to fetch|NetworkError|network/i.test(m))return "通信に失敗しました。ネット接続を確認してください。";
+  return m.slice(0,120);
+}
+function callGemini(parts){
+  if(!geminiApiKey)return Promise.reject(new Error("APIキーが未設定です"));
+  var lastErr=null;
+  function tryModel(idx){
+    if(idx>=GEMINI_MODELS.length)return Promise.reject(lastErr||new Error("Geminiに接続できませんでした"));
+    var model=GEMINI_MODELS[idx];
+    var url="https://generativelanguage.googleapis.com/v1beta/models/"+model+":generateContent?key="+encodeURIComponent(geminiApiKey);
+    return fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:parts}],generationConfig:{temperature:0.1}})})
+    .then(function(res){
+      return res.text().then(function(txt){
+        if(!res.ok)throw new Error("HTTP "+res.status+" "+txt.slice(0,200));
+        var data; try{data=JSON.parse(txt);}catch(_){throw new Error("AIの返事を読み取れませんでした");}
+        var cand=data&&data.candidates&&data.candidates[0];
+        var out="";
+        if(cand&&cand.content&&cand.content.parts)cand.content.parts.forEach(function(p){if(p.text)out+=p.text;});
+        if(!out)throw new Error("AIから空の返事が返りました");
+        return out;
+      });
+    }).catch(function(e){lastErr=e; /* model not found -> try next; other errors also fall through once */
+      if(idx+1<GEMINI_MODELS.length&&/404|400|not found/i.test(e.message))return tryModel(idx+1);
+      throw e;
+    });
+  }
+  return tryModel(0);
+}
+function callGeminiText(prompt){return callGemini([{text:prompt}]);}
+function parseGeminiJson(text){
+  if(!text)throw new Error("empty");
+  var t=String(text).trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"");
+  var s=t.indexOf("{"), e=t.lastIndexOf("}");
+  if(s===-1||e===-1||e<=s)throw new Error("JSONが見つかりません");
+  return JSON.parse(t.slice(s,e+1));
+}
+function imageToInlineData(file){
+  return loadBitmap(file).then(function(img){
+    var iw=img.width, ih=img.height, maxEdge=2000;
+    var scale=Math.min(1, maxEdge/Math.max(iw,ih));
+    var w=Math.max(1,Math.round(iw*scale)), h=Math.max(1,Math.round(ih*scale));
+    var canvas=document.createElement("canvas"); canvas.width=w; canvas.height=h;
+    canvas.getContext("2d").drawImage(img,0,0,w,h);
+    var dataUrl=canvas.toDataURL("image/jpeg",0.88);
+    return {mime_type:"image/jpeg", data:dataUrl.split(",")[1]};
+  });
+}
 
 /* ---------------- home ---------------- */
 function renderSubjects(){
@@ -310,25 +444,63 @@ $("createBtn").addEventListener("click",function(){
   lessons.push(lesson); renderLessonList(); openLesson(lesson.id);
 });
 $("lessonDate").value=todayJst();
-renderSubjects(); renderLessonList();
+renderSubjects(); renderLessonList(); renderAiKeyStatus();
 
 /* ---------------- lesson view ---------------- */
 function openLesson(id){currentId=id;stopRecording(true);$("homeView").classList.add("hidden");$("lessonView").classList.remove("hidden");window.scrollTo(0,0);renderLesson();}
 $("backBtn").addEventListener("click",function(){stopRecording(true);currentId=null;$("lessonView").classList.add("hidden");$("homeView").classList.remove("hidden");renderLessonList();});
 
-function photoHTML(p,showText){
+function qualityLabel(conf){
+  return '<span class="quality-good">AI（Gemini）で読み取り済み</span> <span style="color:var(--dim);font-weight:500">— 内容が合っているか下の文章で確認してください</span>';
+}
+function photoHTML(p,interactive){
   var fig='<figure style="margin:0"><img class="photo" src="'+p.url+'" alt="'+(p.kind==="print"?"プリントの写真":"板書の写真")+'">';
-  if(showText&&p.extractedText){fig+='<figcaption style="margin-top:4px;white-space:pre-wrap;background:var(--surface-alt);border-radius:var(--radius);padding:8px 12px;font-size:12px;line-height:1.6">'+(p.note?esc("（"+p.note+"）\n"):"")+esc(p.extractedText)+'</figcaption>';}
+  if(p.ocrStatus==="loading"){
+    fig+='<figcaption class="ocr-panel"><span style="font-size:13px">AIが写真を読んでいます…（10〜30秒ほどかかります）</span></figcaption>';
+  } else if(p.ocrStatus==="nokey"){
+    fig+='<figcaption class="ocr-panel"><span style="font-size:13px">AIキーが未設定のため、まだ読み取っていません。ホームの「AI読み取りの設定」でキーを設定してから、下のボタンで読み取ってください。写真は追加できています。</span>'+(interactive?'<div class="ocr-actions"><button type="button" class="btn-small-accent" data-ocr-reread="'+p.id+'">AIでもう一度読み取る</button></div>':"")+'</figcaption>';
+  } else if(p.extractedText){
+    fig+='<figcaption class="ocr-panel"><span style="font-size:12px;font-weight:700">'+qualityLabel(p.confidence)+'</span>';
+    if(interactive){
+      fig+='<textarea rows="6" data-ocr-text="'+p.id+'" aria-label="読み取り結果を編集">'+esc(p.extractedText)+'</textarea>'+
+        '<div class="ocr-actions">'+
+        (p.kind==="print"?'<button type="button" class="btn-small-accent" data-ocr-rebuild="'+p.id+'">この文章で問題を作り直す</button>':"")+
+        '<button type="button" class="btn-small" data-ocr-reread="'+p.id+'">AIでもう一度読み取る</button>'+
+        '</div>'+
+        '<p style="font-size:12px;color:var(--dim);margin:8px 0 0;line-height:1.6">読み間違いを見つけたら上の文章を直接直して「問題を作り直す」を押すと、その内容で問題が作り直されます。</p>';
+    } else {
+      fig+='<p style="white-space:pre-wrap;font-size:12px;line-height:1.6;margin:6px 0 0">'+esc(p.extractedText)+'</p>';
+    }
+    fig+='</figcaption>';
+  } else if(p.ocrStatus==="failed"){
+    fig+='<figcaption class="ocr-panel"><span style="font-size:13px">AIで読み取れませんでした。通信やキーを確認して、もう一度試してください。写真は追加できているので、問題は手入力でも登録できます。</span>'+(interactive?'<div class="ocr-actions"><button type="button" class="btn-small" data-ocr-reread="'+p.id+'">AIでもう一度読み取る</button></div>':"")+'</figcaption>';
+  }
   fig+='</figure>'; return fig;
+}
+function bindPhotoActions(container){
+  container.querySelectorAll("[data-ocr-rebuild]").forEach(function(btn){
+    btn.addEventListener("click",function(){rebuildQuestionsFromPhoto(parseInt(btn.getAttribute("data-ocr-rebuild"),10));});
+  });
+  container.querySelectorAll("[data-ocr-reread]").forEach(function(btn){
+    btn.addEventListener("click",function(){rereadPhoto(parseInt(btn.getAttribute("data-ocr-reread"),10),false);});
+  });
+  container.querySelectorAll("[data-ocr-text]").forEach(function(ta){
+    ta.addEventListener("input",function(){
+      var l=current(); if(!l)return;
+      var pid=parseInt(ta.getAttribute("data-ocr-text"),10);
+      l.photos.forEach(function(p){if(p.id===pid)p.extractedText=ta.value;});
+    });
+  });
 }
 function renderPhotos(){
   var l=current(); if(!l)return;
   var pp=l.photos.filter(function(p){return p.kind==="print";});
   var bp=l.photos.filter(function(p){return p.kind==="board";});
-  $("printPhotos").innerHTML=pp.map(function(p){return photoHTML(p,false);}).join("");
+  $("printPhotos").innerHTML=pp.map(function(p){return photoHTML(p,true);}).join("");
   $("boardPhotos").innerHTML=bp.map(function(p){return photoHTML(p,true);}).join("");
+  bindPhotoActions($("printPhotos")); bindPhotoActions($("boardPhotos"));
   $("recapPrintPhotos").innerHTML=pp.length?('<p style="font-size:12px;font-weight:700;color:var(--dim);margin:0">プリント</p>'+pp.map(function(p){return photoHTML(p,false);}).join("")):"";
-  $("recapBoardPhotos").innerHTML=bp.length?('<p style="font-size:12px;font-weight:700;color:var(--dim);margin:0">板書</p>'+bp.map(function(p){return photoHTML(p,true);}).join("")):"";
+  $("recapBoardPhotos").innerHTML=bp.length?('<p style="font-size:12px;font-weight:700;color:var(--dim);margin:0">板書</p>'+bp.map(function(p){return photoHTML(p,false);}).join("")):"";
   $("photosRecapSection").classList.toggle("hidden",l.photos.length===0);
 }
 function renderQuestions(){
@@ -403,14 +575,20 @@ function renderAnswers(){
     if(q.teacherAnswer){
       art.innerHTML=head+'<div style="margin-top:12px;background:var(--accent-soft);border-radius:var(--radius);padding:8px 12px"><p style="font-size:12px;font-weight:900;color:var(--accent);margin:0">先生が言った答え</p><p class="font-display" style="font-size:18px;font-weight:900;color:var(--accent);margin:2px 0 0">'+esc(q.teacherAnswer)+'</p>'+(q.teacherNote?'<p style="font-size:14px;line-height:1.7;margin:4px 0 0">'+esc(q.teacherNote)+'</p>':"")+'</div>';
     } else if(q.aiAnswer){
-      art.innerHTML=head+'<p style="font-size:14px;color:var(--dim);margin:12px 0 0">授業では言われなかった問題です。</p><div style="margin-top:8px;background:var(--ink-soft);border-radius:var(--radius);padding:8px 12px"><p style="font-size:12px;font-weight:900;color:var(--ink);margin:0">計算による解答（参考）</p><p class="font-display" style="font-size:18px;font-weight:900;color:var(--ink);margin:2px 0 0">'+esc(q.aiAnswer)+'</p>'+(q.aiExplanation?'<p style="white-space:pre-wrap;font-size:14px;line-height:1.7;margin:4px 0 0">'+esc(q.aiExplanation)+'</p>':"")+'</div>';
+      art.innerHTML=head+'<p style="font-size:14px;color:var(--dim);margin:12px 0 0">授業では言われなかった問題です。</p><div style="margin-top:8px;background:var(--ink-soft);border-radius:var(--radius);padding:8px 12px"><p style="font-size:12px;font-weight:900;color:var(--ink);margin:0">AIの解答（参考）</p><p class="font-display" style="font-size:18px;font-weight:900;color:var(--ink);margin:2px 0 0">'+esc(q.aiAnswer)+'</p>'+(q.aiExplanation?'<p style="white-space:pre-wrap;font-size:14px;line-height:1.7;margin:4px 0 0">'+esc(q.aiExplanation)+'</p>':"")+'</div>';
     } else {
       art.innerHTML=head+'<p style="font-size:14px;color:var(--dim);margin:12px 0 0">授業では言われなかった問題です。</p>';
-      var btn=document.createElement("button"); btn.type="button"; btn.textContent="計算で解いてみる（参考）";
+      var btn=document.createElement("button"); btn.type="button"; btn.textContent=geminiApiKey?"AIに解いてもらう（参考）":"計算で解いてみる（参考）";
       btn.style.cssText="margin-top:8px;border:2px solid var(--ink);background:none;border-radius:999px;padding:6px 16px;font-size:14px;font-weight:700;color:var(--ink)";
       btn.addEventListener("click",function(){
-        var res=solveQuestion(q.text);
-        q.aiAnswer=res.answer; q.aiExplanation=res.explanation; renderAnswers();
+        if(!geminiApiKey){var res=solveQuestion(q.text); q.aiAnswer=res.answer; q.aiExplanation=res.explanation; renderAnswers(); return;}
+        btn.disabled=true; btn.textContent="AIが解いています…";
+        var prompt="次の学校の問題を解いてください。答えと短い解説だけをJSONで返してください（説明文やコードフェンスなし）。\n"+'{"answer":"答え","explanation":"解き方の短い解説"}'+"\n問題: "+q.text;
+        callGeminiText(prompt).then(function(raw){
+          try{var j=parseGeminiJson(raw); q.aiAnswer=String(j.answer||"").trim()||"AIが解けませんでした"; q.aiExplanation=String(j.explanation||"").trim();}
+          catch(e){q.aiAnswer="AIの解答（本文）"; q.aiExplanation=String(raw||"").slice(0,800);}
+        }).catch(function(e){var r2=solveQuestion(q.text); q.aiAnswer=r2.answer; q.aiExplanation="AIに接続できなかったため端末内で計算しました："+geminiErrorText(e)+"\n"+r2.explanation;})
+        .finally(function(){renderAnswers();});
       });
       art.appendChild(btn);
     }
@@ -438,7 +616,7 @@ function renderSummary(){
 function renderQA(){
   var l=current(); if(!l)return;
   var box=$("qaList"); box.innerHTML="";
-  if(l.qa.length===0){box.innerHTML='<p style="font-size:14px;color:var(--dim);margin:0">この授業の内容なら何でも聞けます。文字起こしと板書の読み取り結果の中から、関連する部分を探して答えます。</p>';return;}
+  if(l.qa.length===0){box.innerHTML='<p style="font-size:14px;color:var(--dim);margin:0">この授業の内容なら何でも聞けます。APIキーがあるときは AI が文字起こしと板書を読んで答えます。ないときは記録の中から関連する文を探して答えます。</p>';return;}
   l.qa.forEach(function(m){
     var d=document.createElement("div"); d.className=m.role==="user"?"qa-user":"qa-ai";
     d.innerHTML='<p style="font-size:12px;font-weight:700;color:var(--dim);margin:0">'+(m.role==="user"?"あなた":"アシスタント")+'</p><p style="white-space:pre-wrap;font-size:14px;line-height:1.7;margin:2px 0 0">'+esc(m.text)+'</p>';
@@ -460,56 +638,190 @@ function renderLesson(){
     : "このブラウザは音声認識に未対応です。Chromeで開くか、下の手入力を使ってください。";
 }
 
-/* ---------------- photos + OCR (browser Tesseract.js) ---------------- */
+/* ---------------- photos + AI (Gemini) ----------------
+   Photos are sent to Gemini, which returns full text plus per-question
+   splitting as JSON. The extracted text stays editable per photo and
+   questions can be rebuilt from edited text with the local splitter
+   below (kept as a fallback / rebuild path). */
+var CIRCLED="①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳";
+function cleanOcrText(text){
+  if(!text)return "";
+  var t=text.replace(/\r/g,"").normalize("NFKC");
+  t=t.replace(/｜/g,"").replace(/�/g,"");
+  // Remove stray spaces between Japanese characters
+  var cjk=/[぀-ヿ一-鿿々]/;
+  t=t.split("\n").map(function(line){
+    var out="",prev="";
+    for(var i=0;i<line.length;i++){
+      var ch=line[i];
+      if((ch===" "||ch==="　")&&cjk.test(prev)&&cjk.test(line[i+1]||""))continue;
+      out+=ch; prev=ch;
+    }
+    return out.trim();
+  }).join("\n");
+  // common misread fixes in school prints
+  t=t.replace(/間(\d)/g,"問$1").replace(/第(\d+)間/g,"第$1問").replace(/大間/g,"大問")
+       .replace(/[×✕]/g,"×").replace(/ニ(?==)/g,"=");
+  var lines=t.split("\n").map(function(s){return s.trim();});
+  var kept=[];
+  lines.forEach(function(line){
+    if(!line)return;
+    // noise line: mostly symbols / single stray characters
+    var meaningful=(line.match(/[぀-ヿ一-鿿A-Za-z0-9+×÷=<>²³√]/g)||[]).length;
+    if(line.length>=3&&meaningful/line.length<0.3)return;
+    if(line.length===1&&!/[0-9a-zA-Z]/.test(line))return;
+    kept.push(line);
+  });
+  // join wrapped lines: a line not ending a sentence and not starting a new
+  // question continues onto the next line
+  var joined=[];
+  kept.forEach(function(line){
+    var startsQ=/^(問|大問|第|設問|Q|\(|（|\[|【|\d+[.．、)）]|\d{1,2}\s+(?=[぀-鿿A-Za-z（(])|[①-⑳])/.test(line);
+    if(joined.length&&!startsQ&&!/[:：]$/.test(joined[joined.length-1])&&!/[。．.!！?？]$/.test(joined[joined.length-1])&&joined[joined.length-1].length<70){
+      joined[joined.length-1]+=" "+line;
+    } else joined.push(line);
+  });
+  return joined.join("\n").trim();
+}
+function isHeaderLine(line){
+  return /^(名前|氏名|クラス|組|番|学年|学校|日付|点数|合計|ページ|プリント|ワークシート|教科書|ノート)/.test(line)
+    || /(名前|氏名)\s*[:：]?\s*$/.test(line.replace("：",":"))
+    || /^\d+\s*\/\s*\d+$/.test(line); // page numbers like 1 / 12
+}
 function extractQuestionsFromText(text){
-  var lines=text.split(/\n+/).map(function(s){return s.trim();}).filter(Boolean);
+  var lines=text.split(/\n+/).map(function(s){return s.trim();}).filter(Boolean).filter(function(s){return !isHeaderLine(s);});
   var out=[]; var cur=null;
-  var labelRe=/^(問\s*\d+|大問\s*\d+|第\s*\d+\s*問|\(\s*\d+\s*\)|（\s*\d+\s*）|\d+\s*[.．、)）])/;
+  var labelRe=/^(大問\s*\d+|第\s*\d+\s*問|問\s*\d+|設問\s*\d+|Q\s*\d+|\(\s*\d+\s*\)|（\s*\d+\s*）|\[\s*\d+\s*\]|【\s*\d+\s*】|\d+\s*[.．、)）]|\d{1,2}\s+(?=[぀-鿿A-Za-z（(])|[①-⑳])/i;
+  function flush(){if(cur)out.push(cur);cur=null;}
   lines.forEach(function(line){
     var m=line.match(labelRe);
-    if(m){ if(cur)out.push(cur); cur={label:m[1].replace(/\s+/g,""),text:line}; }
-    else if(cur){ cur.text+=" "+line; }
-    else { cur={label:"問"+(out.length+1),text:line}; }
+    if(m){
+      flush();
+      var raw=m[1].replace(/\s+/g,"");
+      var ci=CIRCLED.indexOf(raw);
+      var label=ci>=0?("問"+(ci+1)):raw.replace(/[()（）\[\]【】]/g,function(c){return c==="("||c==="（"?"(":c===")"||c==="）"?")":"";});
+      if(/^\d+$/.test(label))label="問"+label;
+      if(/^[(]\d+[)]$/.test(raw))label="("+raw.replace(/\D/g,"")+")";
+      cur={label:label,text:line};
+    }
+    else if(cur){cur.text+=" "+line;}
+    else if(line.length>=8){cur={label:"問"+(out.length+1),text:line};}
   });
-  if(cur)out.push(cur);
-  // Drop lines that look like pure headers (very short, no question-ish content) only if we have many
-  return out.filter(function(q){return q.text.replace(q.label,"").trim().length>=2;}).slice(0,40);
+  flush();
+  var seen={},dedup=[];
+  out.forEach(function(q){
+    var body=q.text.replace(q.label,"").trim();
+    if(body.length<2)return;
+    var key=q.label+"|"+body.slice(0,30);
+    if(seen[key])return; seen[key]=1; dedup.push(q);
+  });
+  return dedup.slice(0,40);
+}
+function rebuildQuestionsFromPhoto(photoId){
+  var l=current(); if(!l)return;
+  var ta=document.querySelector('[data-ocr-text="'+photoId+'"]');
+  var photo=null; l.photos.forEach(function(p){if(p.id===photoId)photo=p;}); if(!photo)return;
+  if(ta)photo.extractedText=ta.value;
+  var qs=extractQuestionsFromText(cleanOcrText(photo.extractedText||""));
+  l.questions=l.questions.filter(function(q){return q.photoId!==photoId;});
+  qs.forEach(function(q){l.questions.push({id:nextQId++,label:q.label,text:q.text,teacherAnswer:null,teacherNote:null,aiAnswer:null,aiExplanation:null,photoId:photoId});});
+  renderQuestions();
+  showNotice(qs.length?("読み取り結果から問題を"+qs.length+"件作り直しました。"):("問題らしい区切りが見つかりませんでした。文章に「問1」のような番号を足してから、もう一度押してください。"));
+}
+
+/* --- image loading (kept for Gemini upload: resize happens in imageToInlineData) --- */
+function loadBitmap(file){
+  if(window.createImageBitmap){
+    try{return createImageBitmap(file,{imageOrientation:"from-image"}).catch(function(){return createImageBitmap(file);});}
+    catch(e){/* fall through */}
+  }
+  return new Promise(function(resolve,reject){
+    var img=new Image(); var u=URL.createObjectURL(file);
+    img.onload=function(){resolve(img);};
+    img.onerror=reject; img.src=u;
+  });
 }
 var ocrBusy=false;
-function handlePhoto(file,kind){
-  var l=current(); if(!file||!l||ocrBusy)return;
-  var url=URL.createObjectURL(file);
-  var photo={id:nextPhotoId++,kind:kind,url:url,extractedText:null,note:null};
-  l.photos.push(photo); renderPhotos();
-  if(!window.Tesseract){showNotice("文字の読み取りライブラリを読み込めませんでした。写真は追加したので、問題は手入力で登録してください。");return;}
+function runAiForPhoto(photo){
+  var l=current(); if(!l)return Promise.resolve();
+  if(!geminiApiKey){
+    photo.ocrStatus="nokey"; photo.extractedText=photo.extractedText||null;
+    showNotice("AIキーが未設定なので、写真は追加だけしました。ホームの「AI読み取りの設定」でキーを設定してから、写真の下の「AIでもう一度読み取る」を押してください。");
+    renderPhotos(); return Promise.resolve();
+  }
   ocrBusy=true;
   var wrap=$("ocrProgressWrap"),bar=$("ocrProgressBar"),label=$("ocrProgressLabel");
-  wrap.classList.remove("hidden"); bar.style.width="0%";
-  label.textContent=(kind==="print"?"プリント":"板書")+"を読み取り中…（数十秒かかることがあります）";
+  wrap.classList.remove("hidden"); bar.style.width="15%";
   $("printBtn").disabled=true; $("boardBtn").disabled=true;
-  window.Tesseract.recognize(file,"jpn",{logger:function(m){
-    if(m.status==="recognizing text"){bar.style.width=Math.round((m.progress||0)*100)+"%";}
-  }}).then(function(res){
-    var text=(res.data&&res.data.text||"").trim();
-    photo.extractedText=text||null;
-    if(kind==="print"){
-      var qs=extractQuestionsFromText(text);
-      if(qs.length){
-        qs.forEach(function(q){l.questions.push({id:nextQId++,label:q.label,text:q.text,teacherAnswer:null,teacherNote:null,aiAnswer:null,aiExplanation:null});});
-        showNotice("プリントから問題を"+qs.length+"件読み取りました。間違いは「編集」で直せます。");
-      } else {
-        showNotice("問題を読み取れませんでした。写真は保存したので、明るい場所で撮り直すか、問題を手入力で追加してください。");
-      }
+  label.textContent="AIが"+(photo.kind==="print"?"プリント":"板書")+"を読んでいます…";
+  return imageToInlineData(photo.file).then(function(inline){
+    bar.style.width="45%";
+    var prompt;
+    if(photo.kind==="print"){
+      prompt="あなたは日本の学校のプリント写真を正確に読み取る専門家です。写真の向き・傾き・影・手書き混じりに惑わされず、書かれている内容を理解してください。\n"
+        +"次のJSONだけを返してください（説明文やコードフェンスは付けない）：\n"
+        +'{"fullText":"写真に書かれている全文（見出しや名前欄は除き、改行は\\nで）","questions":[{"label":"問1","text":"その問題の問題文全文"}]}\n'
+        +"ルール:\n"
+        +"- 問題は番号・記号（問1、大問1、(1)、①など）ごとに分け、labelは「問1」「(1)」のように元の表記を保つ。番号がない場合は内容のまとまりごとに分け label を 問1,問2… と付ける。\n"
+        +"- 問題文は省略せず、数式・選択肢・図の説明も含めて全文を入れる。読めない文字は推測で埋めず、そのまま「[読めず]」と書く。\n"
+        +"- 名前・クラス・日付・ページ番号などの欄は questions に入れない。\n"
+        +"- 写真に問題がなければ questions は空配列にする。";
     } else {
-      photo.note=text?"板書の読み取り結果":"";
-      showNotice(text?"板書の写真を追加し、内容を読み取りました。":"板書の文字を読み取れませんでした。写真は追加しました。");
+      prompt="あなたは日本の学校の板書写真を正確に読み取る専門家です。写真の向き・傾き・チョークやマーカーの薄さに惑わされず、板書の内容を全文書き起こしてください。\n"
+        +"次のJSONだけを返してください（説明文やコードフェンスは付けない）：\n"
+        +'{"fullText":"板書の全文（改行は\\nで）","questions":[]}\n'
+        +"読めない文字は推測で埋めず「[読めず]」と書いてください。";
+    }
+    return callGemini([{text:prompt},{inline_data:inline}]);
+  }).then(function(raw){
+    bar.style.width="85%";
+    var parsed=null;
+    try{parsed=parseGeminiJson(raw);}catch(e){parsed=null;}
+    var fullText=parsed&&parsed.fullText?String(parsed.fullText).trim():"";
+    if(!fullText && !parsed){ fullText=String(raw||"").trim(); }
+    photo.extractedText=fullText||null;
+    photo.confidence=null;
+    photo.ocrStatus=fullText?"done":"failed";
+    if(photo.kind==="print"&&fullText){
+      var qs=[];
+      if(parsed&&Array.isArray(parsed.questions)&&parsed.questions.length){
+        parsed.questions.forEach(function(q){
+          var label=String((q&&q.label)||"").trim()||("問"+(qs.length+1));
+          var text=String((q&&q.text)||"").trim();
+          if(text.length>=2)qs.push({label:label,text:(text.indexOf(label)===0?text:label+" "+text)});
+        });
+      }
+      if(!qs.length)qs=extractQuestionsFromText(cleanOcrText(fullText));
+      l.questions=l.questions.filter(function(q){return q.photoId!==photo.id;});
+      qs.forEach(function(q){l.questions.push({id:nextQId++,label:q.label,text:q.text,teacherAnswer:null,teacherNote:null,aiAnswer:null,aiExplanation:null,photoId:photo.id});});
+      showNotice(qs.length?("AIがプリントから問題を"+qs.length+"件読み取りました。写真の下で内容を確認してください。"):("AIは文字を読み取りましたが、問題の区切りが見つかりませんでした。写真の下の文章を確認し、直して「問題を作り直す」を押すか、手入力で追加してください。"));
+    } else if(photo.kind==="board"){
+      photo.note=fullText?"板書の読み取り結果":"";
+      showNotice(fullText?"板書の写真を追加し、AIが内容を読み取りました。":"板書の文字をAIでも読み取れませんでした。写真は追加しました。");
     }
     renderPhotos(); renderQuestions();
-  }).catch(function(){
-    showNotice("写真の読み取りに失敗しました。写真は保存したので、問題は手入力で追加してください。");
+  }).catch(function(e){
+    photo.ocrStatus="failed";
+    showNotice("AI読み取りに失敗しました："+geminiErrorText(e)+" 写真は保存したので、もう一度試すか、問題は手入力で追加してください。");
+    renderPhotos();
   }).finally(function(){
     ocrBusy=false; wrap.classList.add("hidden"); $("printBtn").disabled=false; $("boardBtn").disabled=false;
   });
+}
+function runOcrForPhoto(photo){return runAiForPhoto(photo);}
+function handlePhoto(file,kind){
+  var l=current(); if(!file||!l||ocrBusy)return;
+  var photo={id:nextPhotoId++,kind:kind,url:URL.createObjectURL(file),file:file,origBlob:file,extractedText:null,note:null,confidence:null,ocrStatus:geminiApiKey?"loading":"nokey",rotatedCanvas:null};
+  l.photos.push(photo); renderPhotos();
+  if(geminiApiKey)runAiForPhoto(photo);
+  else showNotice("写真を追加しました。AI読み取りにはホームでAPIキーの設定が必要です（設定後に写真下のボタンで読み取れます）。");
+}
+function rereadPhoto(photoId){
+  var l=current(); if(!l||ocrBusy)return;
+  var photo=null; l.photos.forEach(function(p){if(p.id===photoId)photo=p;}); if(!photo)return;
+  if(!geminiApiKey){photo.ocrStatus="nokey"; renderPhotos(); showNotice("先にホームでGeminiのAPIキーを設定してください。"); return;}
+  photo.ocrStatus="loading"; renderPhotos();
+  runAiForPhoto(photo);
 }
 $("printBtn").addEventListener("click",function(){$("printInput").click();});
 $("boardBtn").addEventListener("click",function(){$("boardInput").click();});
@@ -637,13 +949,48 @@ function buildSummary(l){
     .map(function(s){return s.length>90?s.slice(0,90)+"…":s;});
   return {summary3:picked.slice(0,3),detailSummary:detail,keyTerms:terms.slice(0,8),testPoints:testSents};
 }
-$("finishBtn").addEventListener("click",function(){
-  var l=current(); if(!l)return;
-  if(recording)stopRecording(false);
+function finishLocal(l){
   matchTeacherAnswers(l);
   var s=buildSummary(l);
   l.summary3=s.summary3; l.detailSummary=s.detailSummary; l.keyTerms=s.keyTerms; l.testPoints=s.testPoints;
   l.status="finished"; renderLesson(); window.scrollTo(0,0);
+}
+function finishWithAi(l){
+  var btn=$("finishBtn"); btn.disabled=true; var orig=btn.textContent; btn.textContent="AIが答え合わせとまとめを作っています…（30秒ほど）";
+  var boardTexts=l.photos.filter(function(p){return p.extractedText;}).map(function(p){return "【"+(p.kind==="print"?"プリント読み取り":"板書")+"】\n"+p.extractedText;}).join("\n\n");
+  var qlist=l.questions.map(function(q){return q.label+": "+q.text;}).join("\n")||"（問題なし）";
+  var prompt="あなたは授業の記録から、生徒が後で復習できるまとめを作る専門家です。\n"
+    +"下の【文字起こし】は先生の発言の音声認識結果です（誤変換がありえます）。【問題】と照合し、先生が実際に言った答えだけを抜き出してください。先生が言っていない問題は答えを作らず、teacherAnswer を null にしてください。\n"
+    +"次のJSONだけを返してください（説明文やコードフェンスなし）：\n"
+    +'{"answers":[{"label":"問1","teacherAnswer":"先生が言った答え、言ってなければ null","teacherNote":"答えの根拠になった先生の発言（短く）。なければ null"}],"summary3":["3行要約1","2","3"],"detailSummary":"詳しいまとめ（300〜600字、改行可）","keyTerms":[{"term":"用語","meaning":"意味"}],"testPoints":["テストに出そうな点"]}'
+    +"\n\n【問題】\n"+qlist+"\n\n【文字起こし】\n"+(l.transcript||"（なし）")+"\n\n【板書・プリント読み取り】\n"+(boardTexts||"（なし）");
+  return callGeminiText(prompt).then(function(raw){
+    var j=parseGeminiJson(raw);
+    var byLabel={};
+    (j.answers||[]).forEach(function(a){ if(a&&a.label)byLabel[String(a.label).replace(/\s+/g,"")]=a; });
+    l.questions.forEach(function(q){
+      var a=byLabel[q.label.replace(/\s+/g,"")];
+      if(a&&a.teacherAnswer&&String(a.teacherAnswer).toLowerCase()!=="null"){q.teacherAnswer=String(a.teacherAnswer).trim(); q.teacherNote=(a.teacherNote&&String(a.teacherNote).toLowerCase()!=="null")?String(a.teacherNote).trim():null;}
+      else {q.teacherAnswer=null; q.teacherNote=null;}
+    });
+    l.summary3=Array.isArray(j.summary3)&&j.summary3.length?j.summary3.map(function(s){return String(s);}).slice(0,3):null;
+    l.detailSummary=j.detailSummary?String(j.detailSummary):null;
+    l.keyTerms=Array.isArray(j.keyTerms)?j.keyTerms.filter(function(x){return x&&x.term;}).map(function(x){return {term:String(x.term),meaning:String(x.meaning||"")};}).slice(0,8):[];
+    l.testPoints=Array.isArray(j.testPoints)?j.testPoints.map(function(s){return String(s);}).slice(0,6):[];
+    if(!l.summary3){var s2=buildSummary(l); l.summary3=s2.summary3; if(!l.detailSummary)l.detailSummary=s2.detailSummary;}
+    l.status="finished"; renderLesson(); window.scrollTo(0,0);
+    showNotice("AIが答え合わせとまとめを作りました。先生が言った答えは赤い欄、言われなかった問題はそのまま分かります。");
+  }).finally(function(){btn.disabled=false; btn.textContent=orig;});
+}
+$("finishBtn").addEventListener("click",function(){
+  var l=current(); if(!l)return;
+  if(recording)stopRecording(false);
+  if(!geminiApiKey){finishLocal(l); return;}
+  if(!l.transcript&&!l.questions.length&&!l.photos.length){finishLocal(l); return;}
+  finishWithAi(l).catch(function(e){
+    showNotice("AIでのまとめに失敗しました（"+geminiErrorText(e)+"）。端末内の簡易照合でまとめを作ります。");
+    finishLocal(l);
+  });
 });
 $("reopenBtn").addEventListener("click",function(){var l=current(); if(!l)return; l.status="active"; renderLesson();});
 
@@ -692,7 +1039,7 @@ function solveQuestion(text){
   return {answer:"このWeb版では解けませんでした",explanation:"この問題は自動計算の対象外です（対応：四則計算と基本的な一次方程式）。授業のまとめや質問欄で確認してください。"};
 }
 
-/* ---------------- Q&A: search the lesson record ---------------- */
+/* ---------------- Q&A: AI when key set, else search the lesson record ---------------- */
 function answerQuestion(l,question){
   var boardTexts=l.photos.filter(function(p){return p.kind==="board"&&p.extractedText;}).map(function(p){return p.extractedText;});
   var sents=splitSentences([l.transcript].concat(boardTexts).join("\n"));
@@ -712,9 +1059,20 @@ function answerQuestion(l,question){
 }
 function askQA(){
   var l=current(); if(!l)return; var q=$("qaInput").value.trim(); if(!q)return;
+  $("qaInput").value="";
   l.qa.push({id:nextQaId++,role:"user",text:q});
-  l.qa.push({id:nextQaId++,role:"assistant",text:answerQuestion(l,q)});
-  $("qaInput").value=""; renderQA();
+  if(!geminiApiKey){
+    l.qa.push({id:nextQaId++,role:"assistant",text:answerQuestion(l,q)});
+    renderQA(); return;
+  }
+  var pending={id:nextQaId++,role:"assistant",text:"AIが授業の記録を読んでいます…"};
+  l.qa.push(pending); renderQA();
+  var boardTexts=l.photos.filter(function(p){return p.extractedText;}).map(function(p){return "【"+(p.kind==="print"?"プリント":"板書")+"】\n"+p.extractedText;}).join("\n\n");
+  var answers=l.questions.map(function(x){return x.label+": "+x.text+" / 先生の答え: "+(x.teacherAnswer||"（言われていない）");}).join("\n");
+  var prompt="あなたはこの授業の記録だけをもとに答えるアシスタントです。一般知識で補うときは、その部分は「一般的な説明として」と断ってください。記録にないことを、あったかのように言わないでください。日本語で簡潔に答えてください。\n\n【質問】"+q+"\n\n【文字起こし】\n"+(l.transcript||"（なし）")+"\n\n【板書・プリント】\n"+(boardTexts||"（なし）")+"\n\n【問題と答え】\n"+(answers||"（なし）");
+  callGeminiText(prompt).then(function(ans){pending.text=String(ans||"").trim()||"AIから空の返事が返りました。";})
+  .catch(function(e){pending.text="AIに接続できませんでした（"+geminiErrorText(e)+"）。代わりに記録内検索で答えます：\n\n"+answerQuestion(l,q);})
+  .finally(function(){renderQA();});
 }
 $("qaBtn").addEventListener("click",askQA);
 $("qaInput").addEventListener("keydown",function(e){if(e.key==="Enter")askQA();});
@@ -735,7 +1093,7 @@ $("downloadBtn").addEventListener("click",function(){
     lines.push(q.label+"："+q.text);
     lines.push("　答え（先生）："+(q.teacherAnswer||"授業では言われなかった"));
     if(q.teacherNote)lines.push("　メモ："+q.teacherNote);
-    if(q.aiAnswer)lines.push("　計算による解答（参考）："+q.aiAnswer);
+    if(q.aiAnswer)lines.push("　AIの解答（参考）："+q.aiAnswer);
   });
   lines.push(""); lines.push("■ 文字起こし"); lines.push(l.transcript||"（なし）");
   var blob=new Blob([lines.join("\n")],{type:"text/plain;charset=utf-8"});
