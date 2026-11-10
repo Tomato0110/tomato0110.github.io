@@ -1,0 +1,55 @@
+{
+ "riot_id": "Tomato110#7777",
+ "updated_at": "2026-11-11T00:31:22+09:00",
+ "date_label": "11/11",
+ "reset_at": "2026-11-11T09:05:58+09:00",
+ "offers": [
+  {
+   "name": "リコン スペクター",
+   "icon": "https://media.valorant-api.com/weaponskinlevels/613dd54a-4068-0fab-7670-bf8268a9b76b/displayicon.png",
+   "price": 1775,
+   "currency": "VP"
+  },
+  {
+   "name": "コウハク＆マツバ オペレーター",
+   "icon": "https://media.valorant-api.com/weaponskinlevels/1fe051aa-40e9-3ff6-585a-e384f0197224/displayicon.png",
+   "price": 1275,
+   "currency": "VP"
+  },
+  {
+   "name": "ガレリア ヴァンダル",
+   "icon": "https://media.valorant-api.com/weaponskinlevels/76a1658b-4e89-0f48-1e43-3f80c41d87f7/displayicon.png",
+   "price": 875,
+   "currency": "VP"
+  },
+  {
+   "name": "オラ by OneTap ナイフ",
+   "icon": "https://media.valorant-api.com/weaponskinlevels/31aa75de-4708-6498-bf50-78959a39b0cb/displayicon.png",
+   "price": 4950,
+   "currency": "VP"
+  }
+ ],
+ "bonus": null,
+ "balances": [
+  {
+   "name": "ヴァロラントポイント",
+   "short": "VP",
+   "amount": 595
+  },
+  {
+   "name": "レディアナイトポイント",
+   "short": "RP",
+   "amount": 130
+  },
+  {
+   "name": "キングダムクレジット",
+   "short": "KC",
+   "amount": 9014
+  },
+  {
+   "name": "エージェントトークン",
+   "short": "",
+   "amount": 0
+  }
+ ]
+}

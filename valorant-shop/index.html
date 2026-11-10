@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>デイリーショップ確認 | VALORANT</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#0f1923; --card:#1a242e; --edge:#34424e; --accent:#ff4655;
+    --text:#ece8e1; --sub:#9aa3ab; --price:#ffd97a;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+    min-height:100vh; border-top:6px solid var(--accent);
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:28px 16px 48px;}
+  h1{font-size:30px; letter-spacing:.04em;}
+  h1 .red{color:var(--accent);}
+  .lead{color:var(--sub); margin-top:8px; font-size:14px; line-height:1.7;}
+  .gate{
+    margin-top:28px; background:var(--card); border:1px solid var(--edge);
+    border-radius:14px; padding:22px;
+  }
+  .gate label{display:block; font-size:13px; color:var(--sub); margin-bottom:10px;}
+  .row{display:flex; gap:10px;}
+  input{
+    flex:1; min-width:0; background:#0d141b; color:var(--text);
+    border:1px solid var(--edge); border-radius:10px; padding:14px;
+    font-size:17px; outline:none;
+  }
+  input:focus{border-color:var(--accent);}
+  button{
+    background:var(--accent); color:#fff; border:none; border-radius:10px;
+    padding:14px 20px; font-size:16px; font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  button:active{transform:translateY(1px);}
+  .err{color:#ff8f98; font-size:14px; margin-top:12px; display:none; line-height:1.6;}
+  .meta{display:flex; flex-wrap:wrap; gap:8px 18px; color:var(--sub); font-size:13px; margin:22px 2px 14px;}
+  .meta b{color:var(--text); font-weight:600;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:520px){ .grid{grid-template-columns:1fr;} }
+  .item{
+    background:var(--card); border:1px solid var(--edge); border-radius:14px;
+    padding:16px 14px 14px; text-align:center;
+  }
+  .item img{width:100%; height:130px; object-fit:contain;}
+  .name{margin-top:10px; font-weight:700; font-size:16px; line-height:1.4;}
+  .price{margin-top:6px; color:var(--price); font-weight:700; font-size:19px;}
+  h2{font-size:21px; margin:30px 2px 12px;}
+  .balances{
+    margin-top:26px; background:var(--card); border:1px solid var(--edge);
+    border-radius:14px; padding:16px 18px; font-size:15px; line-height:2;
+  }
+  .balances span{color:var(--sub);}
+  .foot{margin-top:34px; color:var(--sub); font-size:12px; line-height:1.8;}
+  #shop{display:none;}
+  .chip{
+    display:inline-block; background:#24313d; border:1px solid var(--edge);
+    border-radius:999px; padding:4px 12px; font-size:13px; color:var(--text);
+  }
+  .changeid{color:var(--sub); font-size:13px; margin-left:10px; cursor:pointer; text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>デイリーショップ<span class="red">確認</span></h1>
+  <p class="lead">広告なし。Riot IDを入れるだけで、今日のデイリーショップが見られます。<br>
+  ※このサイトで見られるのは、登録済みアカウントのショップだけです。</p>
+
+  <div class="gate" id="gate">
+    <label for="rid">Riot ID（名前#タグ）</label>
+    <div class="row">
+      <input id="rid" type="text" placeholder="Tomato110#7777" autocomplete="off" autocapitalize="none">
+      <button id="go">見る</button>
+    </div>
+    <p class="err" id="err"></p>
+  </div>
+
+  <section id="shop">
+    <div class="meta">
+      <span class="chip" id="who"></span><span class="changeid" id="change">IDを変更</span>
+    </div>
+    <div class="meta">
+      <span>最終更新: <b id="updated">-</b></span>
+      <span>次の更新まで: <b id="countdown">-</b></span>
+    </div>
+    <div class="grid" id="offers"></div>
+    <div id="bonus"></div>
+    <div class="balances" id="balances"></div>
+  </section>
+
+  <p class="foot">ショップのデータは、本人のPC（VALORANT起動中）から定期的に取得して反映しています。PCが起動していない時間帯は、表示が前回のままになることがあります。<br>
+  非公式の個人用ツールです。Riot Games / VALORANT とは関係ありません。</p>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let DATA = null, timer = null;
+
+async function loadData(){
+  const r = await fetch("shop.json?t=" + Date.now());
+  if(!r.ok) throw new Error("load failed");
+  return r.json();
+}
+const norm = (s) => (s || "").trim().toLowerCase().replace(/\s+/g, "");
+
+function yen(n){ return n == null ? "価格不明" : n.toLocaleString("ja-JP"); }
+
+function render(){
+  const d = DATA;
+  $("who").textContent = "ID: " + d.riot_id;
+  const up = new Date(d.updated_at);
+  $("updated").textContent = (up.getMonth()+1) + "/" + up.getDate() + " " +
+    String(up.getHours()).padStart(2,"0") + ":" + String(up.getMinutes()).padStart(2,"0");
+  $("offers").innerHTML = d.offers.map(o =>
+    '<div class="item">' +
+    (o.icon ? '<img src="' + o.icon + '" alt="" loading="lazy">' : "") +
+    '<div class="name">' + o.name + '</div>' +
+    '<div class="price">' + yen(o.price) + (o.currency ? " " + o.currency : "") + '</div></div>'
+  ).join("");
+  if(d.bonus && d.bonus.offers && d.bonus.offers.length){
+    $("bonus").innerHTML = "<h2>🌙 ナイトマーケット</h2>" +
+      '<div class="grid">' + d.bonus.offers.map(o =>
+        '<div class="item">' +
+        (o.icon ? '<img src="' + o.icon + '" alt="" loading="lazy">' : "") +
+        '<div class="name">' + o.name + '</div>' +
+        '<div class="price">' + yen(o.price) + (o.currency ? " " + o.currency : "") +
+        (o.pct ? "（-" + o.pct + "%）" : "") + '</div></div>'
+      ).join("") + "</div>";
+  } else {
+    $("bonus").innerHTML = "";
+  }
+  $("balances").innerHTML = "<span>残高</span><br>" + d.balances.map(b =>
+    b.name + ": <b>" + yen(b.amount) + "</b>"
+  ).join(" ／ ");
+  $("gate").style.display = "none";
+  $("shop").style.display = "block";
+  if(timer) clearInterval(timer);
+  const tick = () => {
+    if(!d.reset_at){ $("countdown").textContent = "-"; return; }
+    let s = Math.max(0, Math.floor((new Date(d.reset_at) - new Date()) / 1000));
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+    $("countdown").textContent = "あと " + h + "時間" + String(m).padStart(2,"0") + "分" + String(ss).padStart(2,"0") + "秒";
+  };
+  tick(); timer = setInterval(tick, 1000);
+}
+
+async function tryShow(id){
+  try{
+    DATA = await loadData();
+  }catch(e){
+    $("err").textContent = "ショップデータを読み込めませんでした。時間をおいて開き直してください。";
+    $("err").style.display = "block";
+    return;
+  }
+  if(norm(id) === norm(DATA.riot_id)){
+    localStorage.setItem("valorant-shop-id", id);
+    $("err").style.display = "none";
+    render();
+  }else{
+    $("err").textContent = "そのIDのショップは登録されていません。このサイトは登録済みアカウント専用です。";
+    $("err").style.display = "block";
+  }
+}
+
+$("go").addEventListener("click", () => tryShow($("rid").value));
+$("rid").addEventListener("keydown", (e) => { if(e.key === "Enter") tryShow($("rid").value); });
+$("change").addEventListener("click", () => {
+  localStorage.removeItem("valorant-shop-id");
+  $("shop").style.display = "none";
+  $("gate").style.display = "block";
+});
+const saved = localStorage.getItem("valorant-shop-id");
+if(saved){ $("rid").value = saved; tryShow(saved); }
+</script>
+</body>
+</html>
